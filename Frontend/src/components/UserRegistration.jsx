@@ -106,10 +106,10 @@ const UserRegistration = () => {
           />
 
           <div className="mt-8">
-            <Button 
-              type="submit" 
-              variant="primary" 
-              fullWidth 
+            <Button
+              type="submit"
+              variant="primary"
+              fullWidth
               size="large"
               className="py-4 font-semibold"
             >
