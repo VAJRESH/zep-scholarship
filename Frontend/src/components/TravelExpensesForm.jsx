@@ -87,97 +87,280 @@ const TravelExpensesForm = () => {
   };
 
   return (
-    <div className="registration-container">
-      <h2>Apply for Travel Expenses</h2>
-      {error && <div className="error-message">{error}</div>}
-      {success && (
-        <div className="success-message">
-          Application submitted successfully! Redirecting to options page...
-        </div>
-      )}
-      <p>Please provide details about your travel requirements:</p>
-
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Place of Residence *</label>
-          <input
-            type="text"
-            name="residencePlace"
-            value={formData.residencePlace}
-            onChange={handleChange}
-            placeholder="Enter your place of residence"
-            required
-          />
+    <div className="max-w-3xl mx-auto mt-8 px-4 pb-16">
+      <div className="bg-white shadow-lg rounded-lg overflow-hidden">
+        <div className="bg-green-600 py-6 px-6">
+          <h2 className="text-2xl font-bold text-white">
+            Apply for Travel Expenses
+          </h2>
+          <p className="text-green-100 mt-1">
+            Please provide details about your travel requirements
+          </p>
         </div>
 
-        <div className="form-group">
-          <label>Destination Place *</label>
-          <input
-            type="text"
-            name="destinationPlace"
-            value={formData.destinationPlace}
-            onChange={handleChange}
-            placeholder="Enter your destination place (e.g., college, school)"
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Approximate Distance (in km) *</label>
-          <input
-            type="number"
-            name="distance"
-            value={formData.distance}
-            onChange={handleChange}
-            placeholder="Enter the distance in kilometers"
-            min="1"
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Mode of Transportation *</label>
-          <textarea
-            name="travelMode"
-            value={formData.travelMode}
-            onChange={handleChange}
-            placeholder="Describe how you travel (e.g., bus, train, auto-rickshaw)"
-            rows="3"
-            required
-          ></textarea>
-        </div>
-
-        <div className="form-group">
-          <label>Financial Aid Required (in INR) *</label>
-          <input
-            type="number"
-            name="aidRequired"
-            value={formData.aidRequired}
-            onChange={handleChange}
-            placeholder="Enter the amount needed"
-            min="1"
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Upload ID Card *</label>
-          <input
-            type="file"
-            name="idCard"
-            onChange={handleFileChange}
-            accept=".pdf,.jpg,.jpeg,.png"
-            required
-          />
-          {idCardName && (
-            <div className="file-name">Selected: {idCardName}</div>
+        <div className="p-6">
+          {error && (
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg
+                    className="h-5 w-5 text-red-500"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              </div>
+            </div>
           )}
-        </div>
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Submitting..." : "Submit Application"}
-        </button>
-      </form>
+          {success && (
+            <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg
+                    className="h-5 w-5 text-green-500"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-green-700">
+                    Application submitted successfully! Redirecting to options
+                    page...
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Place of Residence <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="residencePlace"
+                  value={formData.residencePlace}
+                  onChange={handleChange}
+                  placeholder="Enter your place of residence"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Destination Place <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="destinationPlace"
+                  value={formData.destinationPlace}
+                  onChange={handleChange}
+                  placeholder="Enter your destination (e.g., college, school)"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Approximate Distance (in km){" "}
+                  <span className="text-red-500">*</span>
+                </label>
+                <div className="mt-1 relative rounded-md shadow-sm">
+                  <input
+                    type="number"
+                    name="distance"
+                    value={formData.distance}
+                    onChange={handleChange}
+                    placeholder="Enter the distance"
+                    min="1"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    required
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <span className="text-gray-500 sm:text-sm">km</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Financial Aid Required <span className="text-red-500">*</span>
+                </label>
+                <div className="mt-1 relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span className="text-gray-500 sm:text-sm">₹</span>
+                  </div>
+                  <input
+                    type="number"
+                    name="aidRequired"
+                    value={formData.aidRequired}
+                    onChange={handleChange}
+                    placeholder="Enter the amount needed"
+                    min="1"
+                    className="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    required
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <span className="text-gray-500 sm:text-sm">INR</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Mode of Transportation <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                name="travelMode"
+                value={formData.travelMode}
+                onChange={handleChange}
+                placeholder="Describe how you travel (e.g., bus, train, auto-rickshaw)"
+                rows="3"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                required
+              ></textarea>
+            </div>
+
+            <div className="mb-8">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Upload ID Card <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <div
+                  className={`border-2 border-dashed rounded-lg p-4 transition-all ${
+                    idCardName
+                      ? "bg-green-50 border-green-300"
+                      : "border-gray-300 hover:border-green-400"
+                  }`}
+                >
+                  <input
+                    type="file"
+                    name="idCard"
+                    onChange={handleFileChange}
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    required
+                  />
+                  <div className="text-center">
+                    {idCardName ? (
+                      <div className="flex items-center justify-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5 text-green-500 mr-2"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        <span className="text-sm text-green-600 truncate max-w-xs">
+                          {idCardName}
+                        </span>
+                      </div>
+                    ) : (
+                      <div>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="mx-auto h-8 w-8 text-gray-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"
+                          />
+                        </svg>
+                        <p className="mt-1 text-sm text-gray-500">
+                          Click to upload your ID card or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Student ID, College ID, or Government ID (Max 5MB)
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => navigate("/options")}
+                className="mr-4 px-6 py-2 border border-gray-300 shadow-sm text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-6 py-2 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 flex items-center"
+              >
+                {loading && (
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                )}
+                {loading ? "Submitting..." : "Submit Application"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div className="mt-6 text-center text-sm text-gray-500">
+        <p>
+          Need assistance? Contact our support team at support@university.edu
+        </p>
+      </div>
     </div>
   );
 };
