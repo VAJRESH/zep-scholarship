@@ -101,6 +101,20 @@ label {
   cursor: pointer;
 }
 
+/* File input styling */
+input[type="file"] {
+  padding: 8px;
+  background-color: #f9f9f9;
+  border: 1px dashed var(--border-color);
+}
+
+.file-name {
+  margin-top: 5px;
+  font-size: 14px;
+  color: var(--light-text);
+  font-style: italic;
+}
+
 /* Container Styles */
 .login-container,
 .user-registration-container,
@@ -137,7 +151,7 @@ p {
   color: var(--light-text);
 }
 
-/* Error message */
+/* Message styling */
 .error-message {
   background-color: rgba(217, 83, 79, 0.1);
   color: var(--danger-color);
@@ -145,6 +159,15 @@ p {
   border-radius: 4px;
   margin-bottom: 20px;
   border-left: 4px solid var(--danger-color);
+}
+
+.success-message {
+  background-color: rgba(92, 184, 92, 0.1);
+  color: var(--success-color);
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  border-left: 4px solid var(--success-color);
 }
 
 /* Options component */
@@ -212,6 +235,91 @@ p {
 .user-detail p {
   padding: 10px;
   border-bottom: 1px solid var(--border-color);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tabs button {
+  background: none;
+  color: var(--light-text);
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-bottom: 3px solid transparent;
+  margin-right: 10px;
+}
+
+.tabs button.active {
+  color: var(--primary-color);
+  border-bottom: 3px solid var(--primary-color);
+}
+
+.tabs button:hover {
+  background: none;
+  color: var(--primary-color);
+}
+
+/* Application Card */
+.application-card {
+  background: var(--secondary-color);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-left: 4px solid var(--primary-color);
+}
+
+.application-card h3 {
+  color: var(--text-color);
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.application-date {
+  color: var(--light-text);
+  font-size: 14px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.application-files ul {
+  list-style: none;
+  margin: 10px 0;
+}
+
+.application-files li {
+  padding: 8px 0;
+}
+
+.application-files a {
+  display: inline-block;
+  padding: 5px 10px;
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 4px;
+  margin-top: 5px;
+  font-size: 14px;
+}
+
+.application-files a:hover {
+  background-color: var(--primary-dark);
+  text-decoration: none;
+}
+
+.books-list {
+  background-color: white;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  white-space: pre-line;
+}
+
+.back-button {
+  margin-top: 20px;
 }
 
 /* Loading indicator */
