@@ -5,6 +5,7 @@ import { Card, Alert } from "./ui";
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
+  const [registeredUsers, setRegisteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -18,10 +19,51 @@ const AdminDashboard = () => {
           return;
         }
 
+        // Get all users
         const res = await axios.get("/api/admin/users", {
           headers: { "x-auth-token": token },
         });
+
+        // Store all users
         setUsers(res.data);
+
+        // Check registration status for each user
+        const registeredUsersPromises = res.data.map(async (user) => {
+          try {
+            // Try to fetch registration data for this user
+            const regResponse = await axios.get(
+              `/api/admin/users/${user._id}`,
+              {
+                headers: { "x-auth-token": token },
+              }
+            );
+
+            // If we get a response, update the user object with hasRegistered=true
+            return { ...user, hasRegistered: true };
+          } catch (err) {
+            // If we get a 404, the user hasn't registered
+            if (err.response && err.response.status === 404) {
+              return { ...user, hasRegistered: false };
+            }
+            // For other errors, default to not registered
+            return { ...user, hasRegistered: false };
+          }
+        });
+
+        // Wait for all promises to resolve
+        const usersWithRegistrationStatus = await Promise.all(
+          registeredUsersPromises
+        );
+
+        // Update users with registration status
+        setUsers(usersWithRegistrationStatus);
+
+        // Filter to get only registered users
+        const registered = usersWithRegistrationStatus.filter(
+          (user) => user.hasRegistered
+        );
+        setRegisteredUsers(registered);
+
         setLoading(false);
       } catch (err) {
         console.error("Error fetching users:", err);
@@ -104,7 +146,7 @@ const AdminDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold mb-1">Registrations</h3>
-              <p className="text-3xl font-bold">{users.length}</p>
+              <p className="text-3xl font-bold">{registeredUsers.length}</p>
             </div>
             <div className="bg-white bg-opacity-30 p-3 rounded-full">
               <svg
@@ -133,7 +175,7 @@ const AdminDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold mb-1">Applications</h3>
-              <p className="text-3xl font-bold">{users.length}</p>
+              <p className="text-3xl font-bold">{registeredUsers.length}</p>
             </div>
             <div className="bg-white bg-opacity-30 p-3 rounded-full">
               <svg
