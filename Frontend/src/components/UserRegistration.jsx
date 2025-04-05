@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Card, Input, Button, Alert } from "./ui";
 
 const UserRegistration = () => {
   const [formData, setFormData] = useState({
@@ -51,44 +52,85 @@ const UserRegistration = () => {
   };
 
   return (
-    <div className="user-registration-container">
-      <h2>Create Account</h2>
-      {error && <div className="error-message">{error}</div>}
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <input
+    <div className="max-w-md mx-auto my-12">
+      <Card
+        title="Create Account"
+        subtitle="Register for a new account to get started"
+        shadow="lg"
+        padding="large"
+        rounded="lg"
+        className="border border-gray-200"
+      >
+        {error && (
+          <Alert
+            variant="error"
+            className="mb-6"
+            dismissible
+            onDismiss={() => setError("")}
+          >
+            {error}
+          </Alert>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <Input
+            id="username"
             name="username"
-            onChange={handleChange}
-            placeholder="Username"
-            required
+            label="Username"
             value={formData.username}
+            onChange={handleChange}
+            placeholder="Choose a username"
+            required
           />
-        </div>
-        <div className="form-group">
-          <input
+
+          <Input
+            id="password"
             name="password"
-            onChange={handleChange}
-            placeholder="Password"
+            label="Password"
             type="password"
-            required
             value={formData.password}
-          />
-        </div>
-        <div className="form-group">
-          <input
-            name="confirmPassword"
             onChange={handleChange}
-            placeholder="Confirm Password"
-            type="password"
+            placeholder="Create a password"
             required
-            value={formData.confirmPassword}
           />
+
+          <Input
+            id="confirmPassword"
+            name="confirmPassword"
+            label="Confirm Password"
+            type="password"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            placeholder="Confirm your password"
+            required
+          />
+
+          <div className="mt-8">
+            <Button 
+              type="submit" 
+              variant="primary" 
+              fullWidth 
+              size="large"
+              className="py-4 font-semibold"
+            >
+              Create Account
+            </Button>
+          </div>
+        </form>
+
+        <div className="mt-6 text-center">
+          <p className="text-gray-600 dark:text-gray-400 mb-2">
+            Already have an account?
+          </p>
+          <Button
+            variant="secondary"
+            fullWidth
+            onClick={() => (window.location.href = "/login")}
+          >
+            Sign In
+          </Button>
         </div>
-        <button type="submit">Register</button>
-      </form>
-      <p>
-        Already have an account? <a href="/login">Login</a>
-      </p>
+      </Card>
     </div>
   );
 };

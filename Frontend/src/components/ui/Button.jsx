@@ -12,7 +12,7 @@ const Button = ({
 }) => {
   // Base styles
   const baseStyles =
-    "font-medium rounded-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2";
+    "font-medium rounded-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 inline-block text-center";
 
   // Variant styles
   const variantStyles = {

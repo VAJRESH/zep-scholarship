@@ -109,14 +109,17 @@ const Login = () => {
           </Button>
         </form>
 
-        <div className="mt-6 text-center text-gray-600">
-          Don't have an account?{" "}
-          <a
-            href="/register"
-            className="text-blue-600 hover:underline font-medium"
+        <div className="mt-6 text-center">
+          <p className="text-gray-600 dark:text-gray-400 mb-2">
+            Don't have an account?
+          </p>
+          <Button
+            variant="secondary"
+            fullWidth
+            onClick={() => (window.location.href = "/register")}
           >
-            Register
-          </a>
+            Register Now
+          </Button>
         </div>
       </Card>
     </div>

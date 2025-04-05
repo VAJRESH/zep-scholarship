@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Card, Input, Button, Alert } from "./ui";
 
 const Registration = () => {
   const [data, setData] = useState({
@@ -77,146 +78,215 @@ const Registration = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="max-w-3xl mx-auto my-12 flex justify-center items-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   return (
-    <div className="registration-container">
-      <h2>Student Registration</h2>
-      <p>
-        Please fill out your details to continue. You'll only need to do this
-        once.
-      </p>
-      {error && <div className="error-message">{error}</div>}
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <input
-            name="academicYear"
-            onChange={handleChange}
-            placeholder="Academic Year"
-            value={data.academicYear}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Date</label>
-          <input
-            name="date"
-            onChange={handleChange}
-            type="date"
-            value={data.date}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <input
-            name="collegeName"
-            onChange={handleChange}
-            placeholder="College Name"
-            value={data.collegeName}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <input
-            name="courseName"
-            onChange={handleChange}
-            placeholder="Course Name"
-            value={data.courseName}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <input
-            name="applicantName"
-            onChange={handleChange}
-            placeholder="Applicant Name"
-            value={data.applicantName}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <input
-            name="motherName"
-            onChange={handleChange}
-            placeholder="Mother's Name"
-            value={data.motherName}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Date of Birth</label>
-          <input
-            name="dob"
-            onChange={handleChange}
-            type="date"
-            value={data.dob}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <input
-            name="address"
-            onChange={handleChange}
-            placeholder="Address"
-            value={data.address}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <input
-            name="state"
-            onChange={handleChange}
-            placeholder="State"
-            value={data.state}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <input
-            name="caste"
-            onChange={handleChange}
-            placeholder="Caste"
-            value={data.caste}
-          />
-        </div>
-        <div className="form-group">
-          <select
-            name="gender"
-            onChange={handleChange}
-            value={data.gender}
-            required
+    <div className="max-w-3xl mx-auto my-12">
+      <Card
+        title="Student Registration"
+        subtitle="Please fill out your details to continue. You'll only need to do this once."
+        shadow="lg"
+        padding="large"
+        rounded="lg"
+        className="border border-gray-200"
+      >
+        {error && (
+          <Alert
+            variant="error"
+            className="mb-6"
+            dismissible
+            onDismiss={() => setError("")}
           >
-            <option value="">Select Gender</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        <div className="form-group checkbox">
-          <label>
-            Orphan
-            <input
-              type="checkbox"
-              name="orphan"
+            {error}
+          </Alert>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Input
+              id="academicYear"
+              name="academicYear"
+              label="Academic Year"
+              value={data.academicYear}
               onChange={handleChange}
-              checked={data.orphan}
+              placeholder="e.g. 2023-2024"
+              required
             />
-          </label>
-        </div>
-        <div className="form-group checkbox">
-          <label>
-            Disabled
-            <input
-              type="checkbox"
-              name="disabled"
+
+            <Input
+              id="date"
+              name="date"
+              label="Application Date"
+              type="date"
+              value={data.date}
               onChange={handleChange}
-              checked={data.disabled}
+              required
             />
-          </label>
-        </div>
-        <button type="submit">Submit Registration</button>
-      </form>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Input
+              id="collegeName"
+              name="collegeName"
+              label="College Name"
+              value={data.collegeName}
+              onChange={handleChange}
+              placeholder="Enter your college name"
+              required
+            />
+
+            <Input
+              id="courseName"
+              name="courseName"
+              label="Course Name"
+              value={data.courseName}
+              onChange={handleChange}
+              placeholder="e.g. Computer Science"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Input
+              id="applicantName"
+              name="applicantName"
+              label="Applicant Name"
+              value={data.applicantName}
+              onChange={handleChange}
+              placeholder="Enter your full name"
+              required
+            />
+
+            <Input
+              id="motherName"
+              name="motherName"
+              label="Mother's Name"
+              value={data.motherName}
+              onChange={handleChange}
+              placeholder="Enter your mother's name"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Input
+              id="dob"
+              name="dob"
+              label="Date of Birth"
+              type="date"
+              value={data.dob}
+              onChange={handleChange}
+              required
+            />
+
+            <div className="space-y-2">
+              <label
+                htmlFor="gender"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                Gender
+              </label>
+              <select
+                id="gender"
+                name="gender"
+                onChange={handleChange}
+                value={data.gender}
+                required
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <Input
+            id="address"
+            name="address"
+            label="Address"
+            value={data.address}
+            onChange={handleChange}
+            placeholder="Enter your full address"
+            required
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Input
+              id="state"
+              name="state"
+              label="State"
+              value={data.state}
+              onChange={handleChange}
+              placeholder="Enter your state"
+              required
+            />
+
+            <Input
+              id="caste"
+              name="caste"
+              label="Caste (Optional)"
+              value={data.caste}
+              onChange={handleChange}
+              placeholder="Enter your caste"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="orphan"
+                name="orphan"
+                onChange={handleChange}
+                checked={data.orphan}
+                className="w-5 h-5 text-primary focus:ring-primary border-gray-300 rounded"
+              />
+              <label
+                htmlFor="orphan"
+                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                Orphan
+              </label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="disabled"
+                name="disabled"
+                onChange={handleChange}
+                checked={data.disabled}
+                className="w-5 h-5 text-primary focus:ring-primary border-gray-300 rounded"
+              />
+              <label
+                htmlFor="disabled"
+                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                Disabled
+              </label>
+            </div>
+          </div>
+
+          <div className="mt-8">
+            <Button
+              type="submit"
+              variant="primary"
+              fullWidth
+              size="large"
+              className="py-4 font-semibold"
+            >
+              Submit Registration
+            </Button>
+          </div>
+        </form>
+      </Card>
     </div>
   );
 };

@@ -43,7 +43,8 @@ a:hover {
   text-decoration: underline;
 }
 
-button {
+/* Legacy button styles - only apply to buttons without Tailwind classes */
+button:not([class*="bg-"]):not([class*="text-"]):not([class*="border-"]) {
   cursor: pointer;
   background-color: var(--primary-color);
   color: white;
@@ -54,7 +55,7 @@ button {
   transition: var(--transition);
 }
 
-button:hover {
+button:not([class*="bg-"]):not([class*="text-"]):not([class*="border-"]):hover {
   background-color: var(--primary-dark);
 }
 
