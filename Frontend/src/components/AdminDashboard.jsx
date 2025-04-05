@@ -104,9 +104,7 @@ const AdminDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold mb-1">Registrations</h3>
-              <p className="text-3xl font-bold">
-                {users.filter((user) => user.hasRegistered).length}
-              </p>
+              <p className="text-3xl font-bold">{users.length}</p>
             </div>
             <div className="bg-white bg-opacity-30 p-3 rounded-full">
               <svg
@@ -135,7 +133,7 @@ const AdminDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold mb-1">Applications</h3>
-              <p className="text-3xl font-bold">--</p>
+              <p className="text-3xl font-bold">{users.length}</p>
             </div>
             <div className="bg-white bg-opacity-30 p-3 rounded-full">
               <svg
