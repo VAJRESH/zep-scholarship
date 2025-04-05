@@ -25,8 +25,11 @@ const Login = () => {
         // Check if user is admin
         if (loginRes.data.user.role === "admin") {
           console.log("Redirecting to admin dashboard...");
+          localStorage.setItem("userRole", "admin");
           navigate("/admin");
           return;
+        } else {
+          localStorage.setItem("userRole", "user");
         }
 
         // For normal users, check if they've already filled out registration details

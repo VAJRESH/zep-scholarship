@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import Login from "./components/Login";
 import UserRegistration from "./components/UserRegistration";
 import Registration from "./components/Registration";
@@ -98,6 +103,44 @@ const Layout = ({ children }) => {
   );
 };
 
+// User-only route component
+const UserRoute = ({ children }) => {
+  const userRole = localStorage.getItem("userRole");
+  const token = localStorage.getItem("token");
+
+  // Redirect to login if not authenticated
+  if (!token) {
+    return <Navigate to="/login" />;
+  }
+
+  // Redirect admins to dashboard
+  if (userRole === "admin") {
+    return <Navigate to="/admin" />;
+  }
+
+  // Allow access for regular users
+  return <Layout>{children}</Layout>;
+};
+
+// Admin-only route component
+const AdminRoute = ({ children }) => {
+  const userRole = localStorage.getItem("userRole");
+  const token = localStorage.getItem("token");
+
+  // Redirect to login if not authenticated
+  if (!token) {
+    return <Navigate to="/login" />;
+  }
+
+  // Redirect non-admins to options
+  if (userRole !== "admin") {
+    return <Navigate to="/options" />;
+  }
+
+  // Allow access for admins
+  return <Layout>{children}</Layout>;
+};
+
 // App Component with Layout
 function App() {
   return (
@@ -107,52 +150,56 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<UserRegistration />} />
           <Route path="/registration" element={<Registration />} />
+
+          {/* User-only routes */}
           <Route
             path="/options"
             element={
-              <Layout>
+              <UserRoute>
                 <Options />
-              </Layout>
+              </UserRoute>
             }
           />
           <Route
             path="/apply/school-fees"
             element={
-              <Layout>
+              <UserRoute>
                 <SchoolFeesForm />
-              </Layout>
+              </UserRoute>
             }
           />
           <Route
             path="/apply/travel-expenses"
             element={
-              <Layout>
+              <UserRoute>
                 <TravelExpensesForm />
-              </Layout>
+              </UserRoute>
             }
           />
           <Route
             path="/apply/study-books"
             element={
-              <Layout>
+              <UserRoute>
                 <StudyBooksForm />
-              </Layout>
+              </UserRoute>
             }
           />
+
+          {/* Admin-only routes */}
           <Route
             path="/admin/users/:id"
             element={
-              <Layout>
+              <AdminRoute>
                 <UserDetail />
-              </Layout>
+              </AdminRoute>
             }
           />
           <Route
             path="/admin"
             element={
-              <Layout>
+              <AdminRoute>
                 <AdminDashboard />
-              </Layout>
+              </AdminRoute>
             }
           />
           <Route path="/" element={<Login />} />
