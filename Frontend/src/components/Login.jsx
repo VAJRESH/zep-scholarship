@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { Card, Input, Button, Alert } from "./ui";
 
 const Login = () => {
   const [formData, setFormData] = useState({ username: "", password: "" });
@@ -61,34 +62,63 @@ const Login = () => {
   };
 
   return (
-    <div className="login-container">
-      <h2>Login</h2>
-      {error && <div className="error-message">{error}</div>}
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <input
+    <div className="max-w-md mx-auto my-12">
+      <Card
+        title="Welcome Back"
+        subtitle="Sign in to your account"
+        shadow="lg"
+        padding="large"
+        rounded="lg"
+        className="border border-gray-200"
+      >
+        {error && (
+          <Alert
+            variant="error"
+            className="mb-6"
+            dismissible
+            onDismiss={() => setError("")}
+          >
+            {error}
+          </Alert>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <Input
+            id="username"
             name="username"
-            onChange={handleChange}
-            placeholder="Username"
-            required
+            label="Username"
             value={formData.username}
-          />
-        </div>
-        <div className="form-group">
-          <input
-            name="password"
             onChange={handleChange}
-            placeholder="Password"
-            type="password"
+            placeholder="Enter your username"
             required
-            value={formData.password}
           />
+
+          <Input
+            id="password"
+            name="password"
+            label="Password"
+            type="password"
+            value={formData.password}
+            onChange={handleChange}
+            placeholder="Enter your password"
+            required
+          />
+
+          <Button type="submit" variant="primary" fullWidth size="large">
+            Sign In
+          </Button>
+        </form>
+
+        <div className="mt-6 text-center text-gray-600">
+          Don't have an account?{" "}
+          <a
+            href="/register"
+            className="text-blue-600 hover:underline font-medium"
+          >
+            Register
+          </a>
         </div>
-        <button type="submit">Login</button>
-      </form>
-      <p>
-        Don't have an account? <a href="/register">Register</a>
-      </p>
+      </Card>
     </div>
   );
 };
