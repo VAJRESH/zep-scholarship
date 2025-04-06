@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { Card, Alert } from "./ui";
+import { Card, Alert, DocumentViewer } from "./ui";
 
 const UserHistory = () => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [viewingDocument, setViewingDocument] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -232,10 +233,10 @@ const UserHistory = () => {
             <p className="mb-2 font-medium text-gray-700 dark:text-gray-300">
               ID Card
             </p>
-            <a
-              href={app.idCard}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() =>
+                setViewingDocument({ url: app.idCard, title: "ID Card" })
+              }
               className="inline-flex items-center text-primary hover:text-primary-dark"
             >
               <svg
@@ -249,7 +250,7 @@ const UserHistory = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                 />
                 <path
                   strokeLinecap="round"
@@ -259,7 +260,7 @@ const UserHistory = () => {
                 />
               </svg>
               View ID Card
-            </a>
+            </button>
           </div>
         )}
       </div>
@@ -362,11 +363,9 @@ const UserHistory = () => {
     const colorClasses = colors[color] || colors.blue;
 
     return (
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="group p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 flex flex-col"
+      <button
+        onClick={() => setViewingDocument({ url, title })}
+        className="group p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 flex flex-col text-left w-full"
       >
         <div className="flex items-center mb-3">
           <div className={`p-2 rounded-lg mr-3 ${colorClasses.bg}`}>
@@ -390,13 +389,13 @@ const UserHistory = () => {
               {title}
             </span>
             <span className="text-xs text-gray-500 dark:text-gray-400">
-              PDF Document
+              View document
             </span>
           </div>
         </div>
         <div className="mt-auto pt-2 flex justify-between items-center border-t border-gray-100 dark:border-gray-700">
           <span className="text-xs text-gray-500 dark:text-gray-400">
-            View document
+            Click to preview
           </span>
           <span
             className={`p-1 rounded-full bg-gray-100 dark:bg-gray-700 ${colorClasses.hover} transition-colors duration-200`}
@@ -412,12 +411,18 @@ const UserHistory = () => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
               />
             </svg>
           </span>
         </div>
-      </a>
+      </button>
     );
   };
 
@@ -638,6 +643,14 @@ const UserHistory = () => {
             </Card>
           ))}
         </div>
+      )}
+
+      {viewingDocument && (
+        <DocumentViewer
+          url={viewingDocument.url}
+          title={viewingDocument.title}
+          onClose={() => setViewingDocument(null)}
+        />
       )}
     </div>
   );
