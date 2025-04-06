@@ -15,6 +15,16 @@ import TravelExpensesForm from "./components/TravelExpensesForm";
 import StudyBooksForm from "./components/StudyBooksForm";
 import UserHistory from "./components/UserHistory";
 import Home from "./components/Home";
+
+// New Pages
+import AboutUs from "./components/pages/AboutUs";
+import Contact from "./components/pages/Contact";
+import HowToApply from "./components/pages/HowToApply";
+import FAQ from "./components/pages/FAQ";
+import Partners from "./components/pages/Partners";
+import PrivacyPolicy from "./components/pages/PrivacyPolicy";
+import TermsOfService from "./components/pages/TermsOfService";
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ThemeToggle } from "./components/ui";
@@ -220,6 +230,15 @@ function App() {
               </AdminRoute>
             }
           />
+
+          {/* Public Information Pages */}
+          <Route path="/about-us" element={<AboutUs />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/how-to-apply" element={<HowToApply />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/partners" element={<Partners />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
 
           {/* Home page route */}
           <Route path="/" element={<Home />} />

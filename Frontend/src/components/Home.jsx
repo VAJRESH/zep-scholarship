@@ -499,7 +499,7 @@ const Home = () => {
               <ul className="mt-4 space-y-2">
                 <li>
                   <Link
-                    to="#"
+                    to="/how-to-apply"
                     className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                   >
                     How to Apply
@@ -507,7 +507,7 @@ const Home = () => {
                 </li>
                 <li>
                   <Link
-                    to="#"
+                    to="/faq"
                     className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                   >
                     FAQ
@@ -515,7 +515,7 @@ const Home = () => {
                 </li>
                 <li>
                   <Link
-                    to="#"
+                    to="/how-to-apply"
                     className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                   >
                     Guidelines
@@ -530,7 +530,7 @@ const Home = () => {
               <ul className="mt-4 space-y-2">
                 <li>
                   <Link
-                    to="#"
+                    to="/about-us"
                     className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                   >
                     About Us
@@ -538,7 +538,7 @@ const Home = () => {
                 </li>
                 <li>
                   <Link
-                    to="#"
+                    to="/contact"
                     className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                   >
                     Contact
@@ -546,7 +546,7 @@ const Home = () => {
                 </li>
                 <li>
                   <Link
-                    to="#"
+                    to="/partners"
                     className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                   >
                     Partners
@@ -561,7 +561,7 @@ const Home = () => {
               <ul className="mt-4 space-y-2">
                 <li>
                   <Link
-                    to="#"
+                    to="/privacy-policy"
                     className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                   >
                     Privacy Policy
@@ -569,7 +569,7 @@ const Home = () => {
                 </li>
                 <li>
                   <Link
-                    to="#"
+                    to="/terms-of-service"
                     className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                   >
                     Terms of Service
