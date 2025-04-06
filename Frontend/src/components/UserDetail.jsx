@@ -47,6 +47,175 @@ const UserDetail = () => {
     navigate("/admin");
   };
 
+  const handleDownload = (url, filename) => {
+    // Create a temporary anchor element
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename; // This will use the original filename
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const DocumentCard = ({ title, url, color, onClick }) => {
+    const colors = {
+      blue: {
+        bg: "bg-blue-100",
+        text: "text-blue-500",
+        hover: "hover:bg-blue-200",
+        icon: "text-blue-500",
+      },
+      green: {
+        bg: "bg-green-100",
+        text: "text-green-500",
+        hover: "hover:bg-green-200",
+        icon: "text-green-500",
+      },
+      purple: {
+        bg: "bg-purple-100",
+        text: "text-purple-500",
+        hover: "hover:bg-purple-200",
+        icon: "text-purple-500",
+      },
+      orange: {
+        bg: "bg-orange-100",
+        text: "text-orange-500",
+        hover: "hover:bg-orange-200",
+        icon: "text-orange-500",
+      },
+      pink: {
+        bg: "bg-pink-100",
+        text: "text-pink-500",
+        hover: "hover:bg-pink-200",
+        icon: "text-pink-500",
+      },
+      indigo: {
+        bg: "bg-indigo-100",
+        text: "text-indigo-500",
+        hover: "hover:bg-indigo-200",
+        icon: "text-indigo-500",
+      },
+      teal: {
+        bg: "bg-teal-100",
+        text: "text-teal-500",
+        hover: "hover:bg-teal-200",
+        icon: "text-teal-500",
+      },
+    };
+
+    const colorClasses = colors[color] || colors.blue;
+
+    return (
+      <div className="group p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 flex flex-col text-left w-full">
+        <div className="flex items-center mb-3">
+          <div className={`p-2 rounded-lg mr-3 ${colorClasses.bg}`}>
+            <svg
+              className={`w-6 h-6 ${colorClasses.text}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+          </div>
+          <div>
+            <span className="block font-medium text-gray-800 dark:text-white">
+              {title}
+            </span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              View document
+            </span>
+          </div>
+        </div>
+        <div className="mt-auto pt-2 flex justify-between items-center border-t border-gray-100 dark:border-gray-700">
+          <div className="flex space-x-2">
+            <button
+              onClick={onClick}
+              className="text-xs text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary-dark flex items-center"
+            >
+              <svg
+                className="w-4 h-4 mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
+              </svg>
+              Preview
+            </button>
+            <button
+              onClick={() =>
+                handleDownload(
+                  url,
+                  `${title.toLowerCase().replace(/\s+/g, "_")}.pdf`
+                )
+              }
+              className="text-xs text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary-dark flex items-center"
+            >
+              <svg
+                className="w-4 h-4 mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
+              </svg>
+              Download
+            </button>
+          </div>
+          <span
+            className={`p-1 rounded-full bg-gray-100 dark:bg-gray-700 ${colorClasses.hover} transition-colors duration-200`}
+          >
+            <svg
+              className={`w-4 h-4 text-gray-600 dark:text-gray-400 ${colorClasses.icon}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+              />
+            </svg>
+          </span>
+        </div>
+      </div>
+    );
+  };
+
   const renderApplicationDetails = (app) => {
     switch (app.applicationType) {
       case "schoolFees":
@@ -64,7 +233,7 @@ const UserDetail = () => {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
+                    strokeWidth="2"
                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
@@ -76,228 +245,95 @@ const UserDetail = () => {
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {app.birthCertificate && (
-                  <a
-                    href={app.birthCertificate}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 flex flex-col"
-                  >
-                    <div className="flex items-center mb-3">
-                      <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg mr-3">
-                        <svg
-                          className="w-6 h-6 text-blue-500 dark:text-blue-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <span className="block font-medium text-gray-800 dark:text-white">
-                          Birth Certificate
-                        </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          PDF Document
-                        </span>
-                      </div>
-                    </div>
-                    <div className="mt-auto pt-2 flex justify-between items-center border-t border-gray-100 dark:border-gray-700">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        View document
-                      </span>
-                      <span className="p-1 rounded-full bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors duration-200">
-                        <svg
-                          className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                          />
-                        </svg>
-                      </span>
-                    </div>
-                  </a>
+                  <DocumentCard
+                    title="Birth Certificate"
+                    url={app.birthCertificate}
+                    color="blue"
+                    onClick={() =>
+                      setViewingDocument({
+                        url: app.birthCertificate,
+                        title: "Birth Certificate",
+                      })
+                    }
+                  />
                 )}
                 {app.leavingCertificate && (
-                  <a
-                    href={app.leavingCertificate}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 flex flex-col"
-                  >
-                    <div className="flex items-center mb-3">
-                      <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg mr-3">
-                        <svg
-                          className="w-6 h-6 text-green-500 dark:text-green-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <span className="block font-medium text-gray-800 dark:text-white">
-                          Leaving Certificate
-                        </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          PDF Document
-                        </span>
-                      </div>
-                    </div>
-                    <div className="mt-auto pt-2 flex justify-between items-center border-t border-gray-100 dark:border-gray-700">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        View document
-                      </span>
-                      <span className="p-1 rounded-full bg-gray-100 dark:bg-gray-700 group-hover:bg-green-100 dark:group-hover:bg-green-900/30 transition-colors duration-200">
-                        <svg
-                          className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-green-600 dark:group-hover:text-green-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                          />
-                        </svg>
-                      </span>
-                    </div>
-                  </a>
+                  <DocumentCard
+                    title="Leaving Certificate"
+                    url={app.leavingCertificate}
+                    color="green"
+                    onClick={() =>
+                      setViewingDocument({
+                        url: app.leavingCertificate,
+                        title: "Leaving Certificate",
+                      })
+                    }
+                  />
                 )}
                 {app.marksheet && (
-                  <a
-                    href={app.marksheet}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 flex flex-col"
-                  >
-                    <div className="flex items-center mb-3">
-                      <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg mr-3">
-                        <svg
-                          className="w-6 h-6 text-purple-500 dark:text-purple-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <span className="block font-medium text-gray-800 dark:text-white">
-                          Marksheet
-                        </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          PDF Document
-                        </span>
-                      </div>
-                    </div>
-                    <div className="mt-auto pt-2 flex justify-between items-center border-t border-gray-100 dark:border-gray-700">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        View document
-                      </span>
-                      <span className="p-1 rounded-full bg-gray-100 dark:bg-gray-700 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/30 transition-colors duration-200">
-                        <svg
-                          className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                          />
-                        </svg>
-                      </span>
-                    </div>
-                  </a>
+                  <DocumentCard
+                    title="Marksheet"
+                    url={app.marksheet}
+                    color="purple"
+                    onClick={() =>
+                      setViewingDocument({
+                        url: app.marksheet,
+                        title: "Marksheet",
+                      })
+                    }
+                  />
                 )}
                 {app.admissionProof && (
-                  <a
-                    href={app.admissionProof}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 flex flex-col"
-                  >
-                    <div className="flex items-center mb-3">
-                      <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg mr-3">
-                        <svg
-                          className="w-6 h-6 text-orange-500 dark:text-orange-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <span className="block font-medium text-gray-800 dark:text-white">
-                          Admission Proof
-                        </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          PDF Document
-                        </span>
-                      </div>
-                    </div>
-                    <div className="mt-auto pt-2 flex justify-between items-center border-t border-gray-100 dark:border-gray-700">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        View document
-                      </span>
-                      <span className="p-1 rounded-full bg-gray-100 dark:bg-gray-700 group-hover:bg-orange-100 dark:group-hover:bg-orange-900/30 transition-colors duration-200">
-                        <svg
-                          className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-orange-600 dark:group-hover:text-orange-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                          />
-                        </svg>
-                      </span>
-                    </div>
-                  </a>
+                  <DocumentCard
+                    title="Admission Proof"
+                    url={app.admissionProof}
+                    color="orange"
+                    onClick={() =>
+                      setViewingDocument({
+                        url: app.admissionProof,
+                        title: "Admission Proof",
+                      })
+                    }
+                  />
+                )}
+                {app.incomeProof && (
+                  <DocumentCard
+                    title="Income Proof"
+                    url={app.incomeProof}
+                    color="pink"
+                    onClick={() =>
+                      setViewingDocument({
+                        url: app.incomeProof,
+                        title: "Income Proof",
+                      })
+                    }
+                  />
+                )}
+                {app.bankAccount && (
+                  <DocumentCard
+                    title="Bank Account Details"
+                    url={app.bankAccount}
+                    color="indigo"
+                    onClick={() =>
+                      setViewingDocument({
+                        url: app.bankAccount,
+                        title: "Bank Account Details",
+                      })
+                    }
+                  />
+                )}
+                {app.rationCard && (
+                  <DocumentCard
+                    title="Ration Card"
+                    url={app.rationCard}
+                    color="teal"
+                    onClick={() =>
+                      setViewingDocument({
+                        url: app.rationCard,
+                        title: "Ration Card",
+                      })
+                    }
+                  />
                 )}
               </div>
             </div>
@@ -347,34 +383,56 @@ const UserDetail = () => {
                 <p className="mb-2 font-medium text-gray-700 dark:text-gray-300">
                   ID Card
                 </p>
-                <a
-                  href={app.idCard}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-primary hover:text-primary-dark"
-                >
-                  <svg
-                    className="w-5 h-5 mr-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() =>
+                      setViewingDocument({ url: app.idCard, title: "ID Card" })
+                    }
+                    className="inline-flex items-center text-primary hover:text-primary-dark"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
-                  View ID Card
-                </a>
+                    <svg
+                      className="w-5 h-5 mr-1"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      />
+                    </svg>
+                    Preview
+                  </button>
+                  <button
+                    onClick={() => handleDownload(app.idCard, "id_card.pdf")}
+                    className="inline-flex items-center text-primary hover:text-primary-dark"
+                  >
+                    <svg
+                      className="w-5 h-5 mr-1"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
+                    Download
+                  </button>
+                </div>
               </div>
             )}
           </div>
