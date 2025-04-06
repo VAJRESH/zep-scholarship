@@ -105,15 +105,15 @@ const SchoolFeesForm = () => {
 
     return (
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           {label} {isRequired && <span className="text-red-500">*</span>}
         </label>
         <div className="relative">
           <div
             className={`border-2 border-dashed rounded-lg p-4 transition-all ${
               hasFile
-                ? "bg-blue-50 border-blue-300"
-                : "border-gray-300 hover:border-blue-400"
+                ? "bg-blue-50 dark:bg-blue-900 border-blue-300 dark:border-blue-700"
+                : "border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-600"
             }`}
           >
             <input
@@ -128,7 +128,7 @@ const SchoolFeesForm = () => {
                 <div className="flex items-center justify-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-blue-500 mr-2"
+                    className="h-5 w-5 text-blue-500 dark:text-blue-400 mr-2"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                   >
@@ -138,7 +138,7 @@ const SchoolFeesForm = () => {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-sm text-blue-600 truncate max-w-xs">
+                  <span className="text-sm text-blue-600 dark:text-blue-400 truncate max-w-xs">
                     {fileNames[name]}
                   </span>
                 </div>
@@ -146,7 +146,7 @@ const SchoolFeesForm = () => {
                 <div>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="mx-auto h-8 w-8 text-gray-400"
+                    className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-500"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -158,10 +158,10 @@ const SchoolFeesForm = () => {
                       d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                     />
                   </svg>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     Click to upload or drag and drop
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                     PDF, JPG, PNG (Max 10MB)
                   </p>
                 </div>
@@ -175,8 +175,8 @@ const SchoolFeesForm = () => {
 
   return (
     <div className="max-w-3xl mx-auto mt-8 px-4 pb-16">
-      <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-        <div className="bg-blue-600 py-6 px-6">
+      <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden">
+        <div className="bg-blue-600 dark:bg-blue-800 py-6 px-6">
           <h2 className="text-2xl font-bold text-white">
             Apply for School Fees Scholarship
           </h2>
@@ -187,7 +187,7 @@ const SchoolFeesForm = () => {
 
         <div className="p-6">
           {error && (
-            <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+            <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 p-4 mb-6">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <svg
@@ -204,14 +204,16 @@ const SchoolFeesForm = () => {
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm text-red-700">{error}</p>
+                  <p className="text-sm text-red-700 dark:text-red-400">
+                    {error}
+                  </p>
                 </div>
               </div>
             </div>
           )}
 
           {success && (
-            <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
+            <div className="bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500 p-4 mb-6">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <svg
@@ -228,7 +230,7 @@ const SchoolFeesForm = () => {
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm text-green-700">
+                  <p className="text-sm text-green-700 dark:text-green-400">
                     Application submitted successfully! Redirecting to options
                     page...
                   </p>
@@ -239,10 +241,10 @@ const SchoolFeesForm = () => {
 
           <form onSubmit={handleSubmit}>
             <div className="mb-8">
-              <h3 className="text-lg font-medium text-gray-800 mb-4">
+              <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-4">
                 Required Documents
               </h3>
-              <div className="border-b border-gray-200 mb-6"></div>
+              <div className="border-b border-gray-200 dark:border-gray-700 mb-6"></div>
 
               {renderFileInput("birthCertificate", "Birth Certificate")}
               {renderFileInput(
@@ -259,10 +261,10 @@ const SchoolFeesForm = () => {
             </div>
 
             <div className="mb-8">
-              <h3 className="text-lg font-medium text-gray-800 mb-4">
+              <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-4">
                 Optional Documents
               </h3>
-              <div className="border-b border-gray-200 mb-6"></div>
+              <div className="border-b border-gray-200 dark:border-gray-700 mb-6"></div>
 
               {renderFileInput("rationCard", "Ration Card", false)}
             </div>
@@ -271,14 +273,14 @@ const SchoolFeesForm = () => {
               <button
                 type="button"
                 onClick={() => navigate("/options")}
-                className="mr-4 px-6 py-2 border border-gray-300 shadow-sm text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="mr-4 px-6 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-base font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-6 py-2 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 flex items-center"
+                className="px-6 py-2 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 disabled:opacity-50 flex items-center"
               >
                 {loading && (
                   <svg
@@ -309,7 +311,7 @@ const SchoolFeesForm = () => {
         </div>
       </div>
 
-      <div className="mt-6 text-center text-sm text-gray-500">
+      <div className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
         <p>Need help? Contact our support team at support@university.edu</p>
       </div>
     </div>

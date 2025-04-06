@@ -77,24 +77,26 @@ const Options = () => {
       description: "Financial support for tuition and educational expenses",
       icon: icons.schoolFees,
       path: "/apply/school-fees",
-      color: "bg-blue-50 text-blue-600",
-      hoverColor: "hover:bg-blue-100",
+      color: "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
+      hoverColor: "hover:bg-blue-100 dark:hover:bg-blue-900/50",
     },
     {
       title: "Apply for Travel Expenses",
       description: "Support for commuting and transportation costs",
       icon: icons.travelExpenses,
       path: "/apply/travel-expenses",
-      color: "bg-green-50 text-green-600",
-      hoverColor: "hover:bg-green-100",
+      color:
+        "bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400",
+      hoverColor: "hover:bg-green-100 dark:hover:bg-green-900/50",
     },
     {
       title: "Apply for Study Books",
       description: "Support for textbooks and study materials",
       icon: icons.studyBooks,
       path: "/apply/study-books",
-      color: "bg-purple-50 text-purple-600",
-      hoverColor: "hover:bg-purple-100",
+      color:
+        "bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400",
+      hoverColor: "hover:bg-purple-100 dark:hover:bg-purple-900/50",
     },
   ];
 
@@ -106,7 +108,7 @@ const Options = () => {
         shadow="xl"
         padding="large"
         rounded="xl"
-        className="border border-gray-200"
+        className="border border-gray-200 dark:border-gray-700"
       >
         <div className="mt-8 space-y-4">
           {scholarshipOptions.map((option, index) => (
@@ -116,7 +118,7 @@ const Options = () => {
               className={`cursor-pointer p-6 rounded-lg ${option.color} ${option.hoverColor} transition-all duration-200 transform hover:scale-[1.02] border border-transparent hover:border-opacity-50 hover:border-current`}
             >
               <div className="flex items-start space-x-4">
-                <div className="p-3 rounded-full bg-white bg-opacity-70">
+                <div className="p-3 rounded-full bg-white dark:bg-gray-800 bg-opacity-70 dark:bg-opacity-70">
                   {option.icon}
                 </div>
                 <div className="flex-1">
@@ -130,7 +132,7 @@ const Options = () => {
             </div>
           ))}
         </div>
-        <div className="mt-8 text-center text-sm text-gray-500">
+        <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
           Need help choosing? Contact student support at support@university.edu
         </div>
       </Card>
