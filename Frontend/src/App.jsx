@@ -14,6 +14,7 @@ import SchoolFeesForm from "./components/SchoolFeesForm";
 import TravelExpensesForm from "./components/TravelExpensesForm";
 import StudyBooksForm from "./components/StudyBooksForm";
 import UserHistory from "./components/UserHistory";
+import Home from "./components/Home";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ThemeToggle } from "./components/ui";
@@ -219,7 +220,9 @@ function App() {
               </AdminRoute>
             }
           />
-          <Route path="/" element={<Login />} />
+
+          {/* Home page route */}
+          <Route path="/" element={<Home />} />
         </Routes>
       </div>
     </Router>
