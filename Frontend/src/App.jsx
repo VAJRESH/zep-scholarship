@@ -13,6 +13,7 @@ import UserDetail from "./components/UserDetail";
 import SchoolFeesForm from "./components/SchoolFeesForm";
 import TravelExpensesForm from "./components/TravelExpensesForm";
 import StudyBooksForm from "./components/StudyBooksForm";
+import UserHistory from "./components/UserHistory";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ThemeToggle } from "./components/ui";
@@ -69,12 +70,20 @@ const NavBar = () => {
                     Dashboard
                   </button>
                 ) : (
-                  <button
-                    onClick={() => navigate("/options")}
-                    className="px-3 py-2 rounded-md text-sm font-medium hover:bg-primary-dark transition-colors duration-200"
-                  >
-                    Applications
-                  </button>
+                  <>
+                    <button
+                      onClick={() => navigate("/options")}
+                      className="px-3 py-2 rounded-md text-sm font-medium hover:bg-primary-dark transition-colors duration-200"
+                    >
+                      Applications
+                    </button>
+                    <button
+                      onClick={() => navigate("/history")}
+                      className="px-3 py-2 rounded-md text-sm font-medium hover:bg-primary-dark transition-colors duration-200"
+                    >
+                      History
+                    </button>
+                  </>
                 )}
                 <button
                   onClick={handleLogout}
@@ -157,6 +166,14 @@ function App() {
             element={
               <UserRoute>
                 <Options />
+              </UserRoute>
+            }
+          />
+          <Route
+            path="/history"
+            element={
+              <UserRoute>
+                <UserHistory />
               </UserRoute>
             }
           />

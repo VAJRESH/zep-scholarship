@@ -145,4 +145,35 @@ router.post("/study-books", auth, async (req, res) => {
   }
 });
 
+// GET /api/applications/my-applications
+// Get all applications from the logged-in user
+router.get("/my-applications", auth, async (req, res) => {
+  try {
+    // Get user's ID from auth middleware
+    const userId = req.user.id;
+
+    // Fetch applications from all three collections
+    const schoolFeesApps = await SchoolFeesApplication.find({ user: userId });
+    const travelExpensesApps = await TravelExpensesApplication.find({
+      user: userId,
+    });
+    const studyBooksApps = await StudyBooksApplication.find({ user: userId });
+
+    // Combine all applications
+    const allApplications = [
+      ...schoolFeesApps,
+      ...travelExpensesApps,
+      ...studyBooksApps,
+    ];
+
+    // Sort by creation date (newest first)
+    allApplications.sort((a, b) => b.createdAt - a.createdAt);
+
+    res.json(allApplications);
+  } catch (err) {
+    console.error("Error fetching user applications:", err);
+    res.status(500).send("Server error");
+  }
+});
+
 module.exports = router;
