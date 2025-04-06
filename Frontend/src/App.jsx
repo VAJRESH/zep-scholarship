@@ -45,7 +45,7 @@ const NavBar = () => {
     navigate("/login");
   };
 
-  // Hide navbar on login and registration pages
+  // Hide navbar on login, registration, and home pages (Home has its own navbar now)
   if (["/login", "/register", "/"].includes(location.pathname)) {
     return null;
   }
