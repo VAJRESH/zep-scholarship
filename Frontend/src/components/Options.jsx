@@ -101,34 +101,28 @@ const Options = () => {
   ];
 
   return (
-    <div className="max-w-3xl mx-auto mt-16 px-4">
+    <div className="w-full px-4 py-8 sm:px-6 lg:px-8">
       <Card
         title="Select Scholarship Option"
         subtitle="Please select one of the following scholarship options to apply for"
         shadow="xl"
         padding="large"
         rounded="xl"
-        className="border border-gray-200 dark:border-gray-700"
+        className="border border-gray-200 dark:border-gray-700 max-w-full"
       >
-        <div className="mt-8 space-y-4">
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
           {scholarshipOptions.map((option, index) => (
             <div
               key={index}
               onClick={() => navigate(option.path)}
-              className={`cursor-pointer p-6 rounded-lg ${option.color} ${option.hoverColor} transition-all duration-200 transform hover:scale-[1.02] border border-transparent hover:border-opacity-50 hover:border-current`}
+              className={`cursor-pointer p-5 rounded-lg ${option.color} ${option.hoverColor} transition-all duration-200 transform hover:scale-[1.02] border border-transparent hover:border-opacity-50 hover:border-current flex flex-col h-full`}
             >
-              <div className="flex items-start space-x-4">
-                <div className="p-3 rounded-full bg-white dark:bg-gray-800 bg-opacity-70 dark:bg-opacity-70">
-                  {option.icon}
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg">{option.title}</h3>
-                  <p className="mt-1 opacity-80">{option.description}</p>
-                </div>
-                <div className="self-center hidden md:block">
-                  {icons.arrowRight}
-                </div>
+              <div className="p-3 rounded-full bg-white dark:bg-gray-800 bg-opacity-70 dark:bg-opacity-70 self-start mb-3">
+                {option.icon}
               </div>
+              <h3 className="font-semibold text-lg">{option.title}</h3>
+              <p className="mt-2 opacity-80 flex-grow">{option.description}</p>
+              <div className="mt-4 self-end">{icons.arrowRight}</div>
             </div>
           ))}
         </div>
