@@ -8,7 +8,7 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,18 +26,17 @@ const Navbar = () => {
   // Check authentication status
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const role = localStorage.getItem("userRole");
     setIsLoggedIn(!!token);
-
-    const userRole = localStorage.getItem("userRole");
-    setIsAdmin(userRole === "admin");
+    setUserRole(role);
   }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userRole");
     setIsLoggedIn(false);
-    setIsAdmin(false);
-    navigate("/login");
+    setUserRole(null);
+    navigate("/");
   };
 
   return (
@@ -52,57 +51,83 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/">
-                <svg
-                  className="h-8 w-8 text-blue-600 dark:text-blue-400 mr-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                  />
-                </svg>
-              </Link>
-              <Link
-                to="/"
-                className="text-xl font-bold text-blue-600 dark:text-blue-400"
-              >
-                Scholarship Portal
-              </Link>
+              {isLoggedIn ? (
+                <>
+                  <svg
+                    className="h-8 w-8 text-blue-600 dark:text-blue-400 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                    />
+                  </svg>
+                  <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                    Scholarship Portal
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Link to="/">
+                    <svg
+                      className="h-8 w-8 text-blue-600 dark:text-blue-400 mr-2"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                      />
+                    </svg>
+                  </Link>
+                  <Link
+                    to="/"
+                    className="text-xl font-bold text-blue-600 dark:text-blue-400"
+                  >
+                    Scholarship Portal
+                  </Link>
+                </>
+              )}
             </div>
 
-            {/* Desktop navigation links */}
-            <div className="hidden md:flex ml-10 space-x-8">
-              <Link
-                to="/about-us"
-                className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors duration-200"
-              >
-                About Us
-              </Link>
-              <Link
-                to="/how-to-apply"
-                className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors duration-200"
-              >
-                How to Apply
-              </Link>
-              <Link
-                to="/faq"
-                className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors duration-200"
-              >
-                FAQ
-              </Link>
-              <Link
-                to="/contact"
-                className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors duration-200"
-              >
-                Contact
-              </Link>
-            </div>
+            {/* Desktop navigation links - only show when not logged in */}
+            {!isLoggedIn && (
+              <div className="hidden md:flex ml-10 space-x-8">
+                <Link
+                  to="/about-us"
+                  className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors duration-200"
+                >
+                  About Us
+                </Link>
+                <Link
+                  to="/how-to-apply"
+                  className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors duration-200"
+                >
+                  How to Apply
+                </Link>
+                <Link
+                  to="/faq"
+                  className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors duration-200"
+                >
+                  FAQ
+                </Link>
+                <Link
+                  to="/contact"
+                  className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors duration-200"
+                >
+                  Contact
+                </Link>
+              </div>
+            )}
           </div>
+
           <div className="flex items-center space-x-4">
             <ThemeToggle />
 
@@ -138,13 +163,21 @@ const Navbar = () => {
             {/* Authentication buttons or user menu */}
             {isLoggedIn ? (
               <div className="flex space-x-3">
-                {isAdmin ? (
-                  <Link
-                    to="/admin"
-                    className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200"
-                  >
-                    Dashboard
-                  </Link>
+                {userRole === "admin" ? (
+                  <>
+                    <Link
+                      to="/admin"
+                      className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200"
+                    >
+                      Dashboard
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="px-3 py-2 rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 transition-all duration-200"
+                    >
+                      Logout
+                    </button>
+                  </>
                 ) : (
                   <>
                     <Link
@@ -159,14 +192,14 @@ const Navbar = () => {
                     >
                       History
                     </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="px-3 py-2 rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 transition-all duration-200"
+                    >
+                      Logout
+                    </button>
                   </>
                 )}
-                <button
-                  onClick={handleLogout}
-                  className="px-3 py-2 rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 transition-all duration-200"
-                >
-                  Logout
-                </button>
               </div>
             ) : (
               <div className="flex space-x-3">
@@ -191,40 +224,40 @@ const Navbar = () => {
         {mobileMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 bg-white dark:bg-gray-800 rounded-md shadow-lg">
-              <Link
-                to="/about-us"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                About Us
-              </Link>
-              <Link
-                to="/how-to-apply"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                How to Apply
-              </Link>
-              <Link
-                to="/faq"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                FAQ
-              </Link>
-              <Link
-                to="/contact"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Contact
-              </Link>
-
-              {/* Display user menu items in mobile view */}
-              {isLoggedIn && (
+              {!isLoggedIn ? (
                 <>
-                  <div className="border-t border-gray-200 dark:border-gray-700 my-2 pt-2"></div>
-                  {isAdmin ? (
+                  <Link
+                    to="/about-us"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    About Us
+                  </Link>
+                  <Link
+                    to="/how-to-apply"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    How to Apply
+                  </Link>
+                  <Link
+                    to="/faq"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    FAQ
+                  </Link>
+                  <Link
+                    to="/contact"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Contact
+                  </Link>
+                </>
+              ) : (
+                <>
+                  {userRole === "admin" ? (
                     <Link
                       to="/admin"
                       className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
