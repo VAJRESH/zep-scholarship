@@ -12,6 +12,9 @@ const StudyBooksForm = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
+  const [bookInput, setBookInput] = useState("");
+  const [bookType, setBookType] = useState("Textbook");
+  const [booksList, setBooksList] = useState([]);
 
   const handleChange = (e) => {
     setFormData({
@@ -20,14 +23,25 @@ const StudyBooksForm = () => {
     });
   };
 
+  const handleAddBook = () => {
+    if (bookInput.trim() !== "") {
+      setBooksList([...booksList, { name: bookInput, type: bookType }]);
+      setBookInput("");
+      setBookType("Textbook");
+    }
+  };
+
+  const handleRemoveBook = (index) => {
+    setBooksList(booksList.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    // Validate form data
-    if (!formData.yearOfStudy || !formData.field || !formData.booksRequired) {
-      setError("Please fill in all fields");
+    if (!formData.yearOfStudy || !formData.field || booksList.length === 0) {
+      setError("Please fill in all fields and add at least one book");
       setLoading(false);
       return;
     }
@@ -38,6 +52,9 @@ const StudyBooksForm = () => {
         "/api/applications/study-books",
         {
           ...formData,
+          booksRequired: booksList
+            .map((book) => `${book.name} (${book.type})`)
+            .join(", "),
           applicationType: "studyBooks",
         },
         {
@@ -46,16 +63,12 @@ const StudyBooksForm = () => {
           },
         }
       );
-
       setSuccess(true);
       setLoading(false);
-
-      // Redirect after 2 seconds
       setTimeout(() => {
         navigate("/options");
       }, 2000);
     } catch (err) {
-      console.error("Error submitting study books application:", err);
       setError(err.response?.data?.msg || "Failed to submit application");
       setLoading(false);
     }
@@ -189,22 +202,56 @@ const StudyBooksForm = () => {
 
           <div className="form-group">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-              Books Required <span className="text-red-500">*</span>
+              Add Book <span className="text-red-500">*</span>
             </label>
-            <div className="mt-1">
-              <textarea
-                name="booksRequired"
-                value={formData.booksRequired}
-                onChange={handleChange}
-                placeholder="List the books you need along with authors and editions if possible"
-                rows="5"
-                required
-                className="shadow-sm block w-full focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 sm:text-sm border-gray-300 dark:border-gray-600 rounded-lg p-3 bg-white dark:bg-gray-700 dark:text-white"
-              ></textarea>
+            <div className="flex flex-col md:flex-row gap-2 items-center">
+              <input
+                type="text"
+                value={bookInput}
+                onChange={(e) => setBookInput(e.target.value)}
+                placeholder="Book Name"
+                className="shadow-sm block w-full md:w-1/2 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 sm:text-sm border-gray-300 dark:border-gray-600 rounded-lg p-3 bg-white dark:bg-gray-700 dark:text-white"
+              />
+              <select
+                value={bookType}
+                onChange={(e) => setBookType(e.target.value)}
+                className="block w-full md:w-1/4 pl-3 pr-10 py-3 text-base border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 dark:text-white appearance-none"
+              >
+                <option value="Textbook">Textbook</option>
+                <option value="Guide">Guide</option>
+              </select>
+              <button
+                type="button"
+                onClick={handleAddBook}
+                className="py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                Add
+              </button>
             </div>
-            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 italic">
-              Format example: "Book Title by Author Name (Edition, Year)"
-            </p>
+            {booksList.length > 0 && (
+              <ul className="mt-4 space-y-2">
+                {booksList.map((book, idx) => (
+                  <li
+                    key={idx}
+                    className="flex items-center justify-between bg-gray-100 dark:bg-gray-800 rounded p-2"
+                  >
+                    <span>
+                      {book.name}{" "}
+                      <span className="italic text-xs text-gray-500">
+                        ({book.type})
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveBook(idx)}
+                      className="ml-2 text-red-500 hover:text-red-700 text-xs"
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div className="flex justify-between items-center pt-4">

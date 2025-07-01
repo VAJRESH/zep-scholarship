@@ -126,6 +126,20 @@ router.post(
 // Study Books Application
 router.post("/study-books", auth, async (req, res) => {
   try {
+    // Validation for required fields
+    if (!req.body.yearOfStudy || !req.body.field || !req.body.booksRequired) {
+      console.error("Validation error:", {
+        yearOfStudy: req.body.yearOfStudy,
+        field: req.body.field,
+        booksRequired: req.body.booksRequired,
+        user: req.user,
+      });
+      return res
+        .status(400)
+        .json({
+          msg: "All fields (yearOfStudy, field, booksRequired) are required.",
+        });
+    }
     const newApplication = new StudyBooksApplication({
       user: req.user.id,
       applicationType: "studyBooks",
@@ -133,15 +147,18 @@ router.post("/study-books", auth, async (req, res) => {
       field: req.body.field,
       booksRequired: req.body.booksRequired,
     });
-
     await newApplication.save();
     res.json({
       success: true,
       msg: "Study books application submitted successfully",
     });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server error");
+    console.error("Error in /study-books:", {
+      error: err,
+      body: req.body,
+      user: req.user,
+    });
+    res.status(500).json({ msg: err.message || "Server error" });
   }
 });
 
@@ -174,6 +191,11 @@ router.get("/my-applications", auth, async (req, res) => {
     console.error("Error fetching user applications:", err);
     res.status(500).send("Server error");
   }
+});
+
+// Health check endpoint
+router.get("/health", (req, res) => {
+  res.json({ status: "ok", message: "Backend is running" });
 });
 
 module.exports = router;
