@@ -57,6 +57,53 @@ const UserDetail = () => {
     document.body.removeChild(link);
   };
 
+  const handleDownloadStudyBooksPDF = async (appId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `/api/admin/download/study-books/${appId}`,
+        {
+          headers: { "x-auth-token": token },
+          responseType: "blob",
+        }
+      );
+      const url = window.URL.createObjectURL(
+        new Blob([response.data], { type: "application/pdf" })
+      );
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `study-books-application-${appId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Failed to download PDF.");
+    }
+  };
+
+  const handleApproveApplication = async (app) => {
+    try {
+      const token = localStorage.getItem("token");
+      let url = "";
+      if (app.applicationType === "schoolFees") {
+        url = `/api/admin/approve/school-fees/${app._id}`;
+      } else if (app.applicationType === "travelExpenses") {
+        url = `/api/admin/approve/travel-expenses/${app._id}`;
+      } else if (app.applicationType === "studyBooks") {
+        url = `/api/admin/approve/study-books/${app._id}`;
+      }
+      await axios.post(url, {}, { headers: { "x-auth-token": token } });
+      // Refresh applications list
+      setApplications((prev) =>
+        prev.map((a) => (a._id === app._id ? { ...a, status: "approved" } : a))
+      );
+      alert("Application approved!");
+    } catch (err) {
+      alert("Failed to approve application.");
+    }
+  };
+
   const DocumentCard = ({ title, url, color, onClick }) => {
     const colors = {
       blue: {
@@ -1105,29 +1152,58 @@ const UserDetail = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="px-3 py-1.5 text-sm font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 flex items-center">
-                      <svg
-                        className="w-4 h-4 mr-1"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
+                    {app.status !== "approved" && (
+                      <button
+                        onClick={() => handleApproveApplication(app)}
+                        className="ml-2 px-3 py-1.5 text-sm font-medium rounded-full bg-green-600 text-white hover:bg-green-700 transition"
+                        title="Approve Application"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      Pending
-                    </span>
+                        <svg
+                          className="w-4 h-4 mr-1 inline"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                        Approve
+                      </button>
+                    )}
                     <span className="px-3 py-1.5 text-sm font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                       ID: #{app._id ? app._id.slice(-5) : index + 1}
                     </span>
                   </div>
                 </div>
                 {renderApplicationDetails(app)}
+                {app.applicationType === "studyBooks" && (
+                  <button
+                    onClick={() => handleDownloadStudyBooksPDF(app._id)}
+                    className="ml-2 px-3 py-1.5 text-sm font-medium rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 hover:bg-purple-200 dark:hover:bg-purple-800 transition"
+                    title="Download Application PDF"
+                  >
+                    <svg
+                      className="w-4 h-4 mr-1 inline"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
+                    Download PDF
+                  </button>
+                )}
               </Card>
             ))
           )}
