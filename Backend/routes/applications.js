@@ -56,6 +56,17 @@ const schoolFeesUpload = upload.fields([
 
 router.post("/school-fees", auth, schoolFeesUpload, async (req, res) => {
   try {
+    // Prevent duplicate pending/rejected applications
+    const existing = await SchoolFeesApplication.findOne({
+      user: req.user.id,
+      status: { $ne: "approved" },
+    });
+    if (existing) {
+      return res.status(400).json({
+        msg: "You already have a pending or rejected school fees application. Please wait for it to be approved before applying again.",
+      });
+    }
+
     const fileFields = {};
 
     // Process uploaded files
@@ -92,6 +103,17 @@ router.post(
   travelExpensesUpload,
   async (req, res) => {
     try {
+      // Prevent duplicate pending/rejected applications
+      const existing = await TravelExpensesApplication.findOne({
+        user: req.user.id,
+        status: { $ne: "approved" },
+      });
+      if (existing) {
+        return res.status(400).json({
+          msg: "You already have a pending or rejected travel expenses application. Please wait for it to be approved before applying again.",
+        });
+      }
+
       let idCardPath = "";
 
       // Process uploaded ID card
@@ -126,6 +148,17 @@ router.post(
 // Study Books Application
 router.post("/study-books", auth, async (req, res) => {
   try {
+    // Prevent duplicate pending/rejected applications
+    const existing = await StudyBooksApplication.findOne({
+      user: req.user.id,
+      status: { $ne: "approved" },
+    });
+    if (existing) {
+      return res.status(400).json({
+        msg: "You already have a pending or rejected study books application. Please wait for it to be approved before applying again.",
+      });
+    }
+
     // Validation for required fields
     if (!req.body.yearOfStudy || !req.body.field || !req.body.booksRequired) {
       console.error("Validation error:", {
@@ -134,11 +167,9 @@ router.post("/study-books", auth, async (req, res) => {
         booksRequired: req.body.booksRequired,
         user: req.user,
       });
-      return res
-        .status(400)
-        .json({
-          msg: "All fields (yearOfStudy, field, booksRequired) are required.",
-        });
+      return res.status(400).json({
+        msg: "All fields (yearOfStudy, field, booksRequired) are required.",
+      });
     }
     const newApplication = new StudyBooksApplication({
       user: req.user.id,

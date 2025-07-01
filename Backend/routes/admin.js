@@ -68,6 +68,50 @@ router.get("/users/:id/applications", [auth, adminAuth], async (req, res) => {
   }
 });
 
-module.exports = router;
+// Approve School Fees Application
+router.post("/approve/school-fees/:id", [auth, adminAuth], async (req, res) => {
+  try {
+    const app = await SchoolFeesApplication.findById(req.params.id);
+    if (!app) return res.status(404).json({ msg: "Application not found" });
+    app.status = "approved";
+    await app.save();
+    res.json({ success: true, msg: "School fees application approved." });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
+
+// Approve Travel Expenses Application
+router.post(
+  "/approve/travel-expenses/:id",
+  [auth, adminAuth],
+  async (req, res) => {
+    try {
+      const app = await TravelExpensesApplication.findById(req.params.id);
+      if (!app) return res.status(404).json({ msg: "Application not found" });
+      app.status = "approved";
+      await app.save();
+      res.json({ success: true, msg: "Travel expenses application approved." });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send("Server error");
+    }
+  }
+);
+
+// Approve Study Books Application
+router.post("/approve/study-books/:id", [auth, adminAuth], async (req, res) => {
+  try {
+    const app = await StudyBooksApplication.findById(req.params.id);
+    if (!app) return res.status(404).json({ msg: "Application not found" });
+    app.status = "approved";
+    await app.save();
+    res.json({ success: true, msg: "Study books application approved." });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
 
 module.exports = router;
