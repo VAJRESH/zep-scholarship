@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import Navbar from "./Navbar";
 
 const Layout = () => {
   const location = useLocation();
@@ -12,7 +11,6 @@ const Layout = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
       <main className="flex-grow pt-20 md:pt-24">
         <Outlet />
       </main>

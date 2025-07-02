@@ -23,12 +23,21 @@ const Navbar = () => {
     setMobileMenuOpen(false);
   }, [location]);
 
-  // Check authentication status
+  // Check authentication status on every render and on storage change
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const role = localStorage.getItem("userRole");
-    setIsLoggedIn(!!token);
-    setUserRole(role);
+    const checkAuth = () => {
+      const token = localStorage.getItem("token");
+      const role = localStorage.getItem("userRole");
+      setIsLoggedIn(!!token);
+      setUserRole(role);
+    };
+    checkAuth();
+    window.addEventListener("storage", checkAuth);
+    window.addEventListener("popstate", checkAuth);
+    return () => {
+      window.removeEventListener("storage", checkAuth);
+      window.removeEventListener("popstate", checkAuth);
+    };
   }, [location.pathname]);
 
   const handleLogout = () => {

@@ -16,6 +16,7 @@ import StudyBooksForm from "./components/StudyBooksForm";
 import UserHistory from "./components/UserHistory";
 import Home from "./components/Home";
 import Layout from "./components/Layout";
+import Navbar from "./components/Navbar";
 
 // New Pages
 import AboutUs from "./components/pages/AboutUs";
@@ -58,6 +59,7 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Navbar />
         <Routes>
           {/* Auth routes without the navbar */}
           <Route path="/login" element={<Login />} />

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, Button, Alert } from "./ui";
+import { Card, Button, Alert, DocumentViewer } from "./ui";
+
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 const UserDetail = () => {
   const { id } = useParams();
@@ -10,6 +12,7 @@ const UserDetail = () => {
   const [activeTab, setActiveTab] = useState("registration");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [viewingDocument, setViewingDocument] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -102,6 +105,15 @@ const UserDetail = () => {
     } catch (err) {
       alert("Failed to approve application.");
     }
+  };
+
+  const handleDirectDownload = (url, title) => {
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = title ? title.replace(/\s+/g, "_") : "document";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const DocumentCard = ({ title, url, color, onClick }) => {
@@ -209,12 +221,7 @@ const UserDetail = () => {
               Preview
             </button>
             <button
-              onClick={() =>
-                handleDownload(
-                  url,
-                  `${title.toLowerCase().replace(/\s+/g, "_")}.pdf`
-                )
-              }
+              onClick={() => handleDirectDownload(url, title)}
               className="text-xs text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary-dark flex items-center"
             >
               <svg
@@ -294,11 +301,11 @@ const UserDetail = () => {
                 {app.birthCertificate && (
                   <DocumentCard
                     title="Birth Certificate"
-                    url={app.birthCertificate}
+                    url={BASE_URL + app.birthCertificate}
                     color="blue"
                     onClick={() =>
                       setViewingDocument({
-                        url: app.birthCertificate,
+                        url: BASE_URL + app.birthCertificate,
                         title: "Birth Certificate",
                       })
                     }
@@ -307,11 +314,11 @@ const UserDetail = () => {
                 {app.leavingCertificate && (
                   <DocumentCard
                     title="Leaving Certificate"
-                    url={app.leavingCertificate}
+                    url={BASE_URL + app.leavingCertificate}
                     color="green"
                     onClick={() =>
                       setViewingDocument({
-                        url: app.leavingCertificate,
+                        url: BASE_URL + app.leavingCertificate,
                         title: "Leaving Certificate",
                       })
                     }
@@ -320,11 +327,11 @@ const UserDetail = () => {
                 {app.marksheet && (
                   <DocumentCard
                     title="Marksheet"
-                    url={app.marksheet}
+                    url={BASE_URL + app.marksheet}
                     color="purple"
                     onClick={() =>
                       setViewingDocument({
-                        url: app.marksheet,
+                        url: BASE_URL + app.marksheet,
                         title: "Marksheet",
                       })
                     }
@@ -333,11 +340,11 @@ const UserDetail = () => {
                 {app.admissionProof && (
                   <DocumentCard
                     title="Admission Proof"
-                    url={app.admissionProof}
+                    url={BASE_URL + app.admissionProof}
                     color="orange"
                     onClick={() =>
                       setViewingDocument({
-                        url: app.admissionProof,
+                        url: BASE_URL + app.admissionProof,
                         title: "Admission Proof",
                       })
                     }
@@ -346,11 +353,11 @@ const UserDetail = () => {
                 {app.incomeProof && (
                   <DocumentCard
                     title="Income Proof"
-                    url={app.incomeProof}
+                    url={BASE_URL + app.incomeProof}
                     color="pink"
                     onClick={() =>
                       setViewingDocument({
-                        url: app.incomeProof,
+                        url: BASE_URL + app.incomeProof,
                         title: "Income Proof",
                       })
                     }
@@ -359,11 +366,11 @@ const UserDetail = () => {
                 {app.bankAccount && (
                   <DocumentCard
                     title="Bank Account Details"
-                    url={app.bankAccount}
+                    url={BASE_URL + app.bankAccount}
                     color="indigo"
                     onClick={() =>
                       setViewingDocument({
-                        url: app.bankAccount,
+                        url: BASE_URL + app.bankAccount,
                         title: "Bank Account Details",
                       })
                     }
@@ -372,11 +379,11 @@ const UserDetail = () => {
                 {app.rationCard && (
                   <DocumentCard
                     title="Ration Card"
-                    url={app.rationCard}
+                    url={BASE_URL + app.rationCard}
                     color="teal"
                     onClick={() =>
                       setViewingDocument({
-                        url: app.rationCard,
+                        url: BASE_URL + app.rationCard,
                         title: "Ration Card",
                       })
                     }
@@ -433,7 +440,10 @@ const UserDetail = () => {
                 <div className="flex space-x-2">
                   <button
                     onClick={() =>
-                      setViewingDocument({ url: app.idCard, title: "ID Card" })
+                      setViewingDocument({
+                        url: BASE_URL + app.idCard,
+                        title: "ID Card",
+                      })
                     }
                     className="inline-flex items-center text-primary hover:text-primary-dark"
                   >
@@ -1208,6 +1218,13 @@ const UserDetail = () => {
             ))
           )}
         </div>
+      )}
+      {viewingDocument && (
+        <DocumentViewer
+          url={viewingDocument.url}
+          title={viewingDocument.title}
+          onClose={() => setViewingDocument(null)}
+        />
       )}
     </div>
   );

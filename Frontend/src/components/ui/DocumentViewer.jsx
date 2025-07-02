@@ -33,7 +33,13 @@ const DocumentViewer = ({ url, title, onClose }) => {
   }, [url]);
 
   const handleDownload = () => {
-    window.open(url, "_blank");
+    // Create a temporary anchor element to trigger download
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = title ? title.replace(/\s+/g, "_") : "document";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
