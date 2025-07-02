@@ -118,18 +118,23 @@ router.post("/approve/study-books/:id", [auth, adminAuth], async (req, res) => {
 // Download Study Books Application as PDF
 router.get("/download/study-books/:id", [auth, adminAuth], async (req, res) => {
   try {
-    const app = await StudyBooksApplication.findById(req.params.id).populate(
-      "user"
-    );
+    // Fetch application and registration data
+    const app = await StudyBooksApplication.findById(req.params.id).populate("user");
     if (!app) return res.status(404).json({ msg: "Application not found" });
-    const registration = await StudentRegistration.findOne({
-      user: app.user._id,
-    });
-    if (!registration)
-      return res.status(404).json({ msg: "Student registration not found" });
+    const registration = await StudentRegistration.findOne({ user: app.user._id });
+    if (!registration) return res.status(404).json({ msg: "Student registration not found" });
 
-    // Create PDF
-    const doc = new PDFDocument({ margin: 50 });
+    // Initialize PDF with options
+    const doc = new PDFDocument({
+      margin: 40,
+      size: "A4",
+      info: {
+        Title: `Study Books Application - ${app._id}`,
+        Author: "Vivekanand Seva Mandal",
+      },
+    });
+
+    // Set response headers for PDF download
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
@@ -137,111 +142,212 @@ router.get("/download/study-books/:id", [auth, adminAuth], async (req, res) => {
     );
     doc.pipe(res);
 
-    // Header
-    doc
-      .fontSize(24)
-      .font("Times-Bold")
-      .text("Vivekanand Seva Mandal", { align: "center" })
-      .moveDown(0.2);
-    doc
-      .fontSize(18)
-      .font("Times-Bold")
-      .text("Study Books Scholarship Application", { align: "center" })
-      .moveDown(1);
+    // Helper function to draw a horizontal line
+    const drawLine = (y, xStart = 40, xEnd = 555) => {
+      doc.moveTo(xStart, y).lineTo(xEnd, y).lineWidth(1).stroke();
+    };
 
-    // Draw a line below the header
-    doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
+    // Header Section
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(24)
+      .fillColor("#003087")
+      .text("Vivekanand Seva Mandal", { align: "center" })
+      .moveDown(0.3);
+    doc
+      .fontSize(16)
+      .fillColor("#333333")
+      .text("Study Books Scholarship Application", { align: "center" })
+      .moveDown(0.5);
+    drawLine(doc.y + 10);
     doc.moveDown(1);
 
     // Student Details Section
     doc
+      .font("Helvetica-Bold")
       .fontSize(14)
-      .font("Times-Bold")
-      .text("Student Details", { underline: true });
-    doc.moveDown(0.5);
-    doc.fontSize(12).font("Times-Roman");
+      .fillColor("#003087")
+      .text("Student Details", 40, doc.y, { underline: true })
+      .moveDown(0.5);
 
-    // Two-column layout for student details with dynamic y-positioning to avoid overlap
-    const leftColX = 50;
-    const rightColX = 300;
-    let y = doc.y;
+    // Table-like layout for student details
+    const tableTop = doc.y;
+    const col1X = 40;
+    const col2X = 200;
+    const col3X = 350;
     const rowHeight = 20;
-    // Left column fields
-    const leftFields = [
-      ["Academic Year:", registration.academicYear || ""],
-      ["Date:", registration.date ? registration.date.toDateString() : ""],
-      ["College Name:", registration.collegeName || ""],
-      ["Course Name:", registration.courseName || ""],
-      ["Applicant Name:", registration.applicantName || ""],
-      ["Mother's Name:", registration.motherName || ""],
-      ["Address:", registration.address || ""],
+    const labelWidth = 150;
+    const valueWidth = 150;
+
+    // Define student details fields
+    const studentFields = [
+      ["Academic Year", registration.academicYear || "N/A"],
+      ["Date", registration.date ? registration.date.toDateString() : "N/A"],
+      ["Applicant Name", registration.applicantName || "N/A"],
+      ["Mother's Name", registration.motherName || "N/A"],
+      ["DOB", registration.dob ? registration.dob.toDateString() : "N/A"],
+      ["Gender", registration.gender || "N/A"],
+      ["Caste", registration.caste || "N/A"],
+      ["College Name", registration.collegeName || "N/A"],
+      ["Course Name", registration.courseName || "N/A"],
+      ["Address", registration.address || "N/A"],
+      ["State", registration.state || "N/A"],
+      ["Orphan", registration.orphan ? "Yes" : "No"],
+      ["Disabled", registration.disabled ? "Yes" : "No"],
     ];
-    // Right column fields
-    const rightFields = [
-      ["DOB:", registration.dob ? registration.dob.toDateString() : ""],
-      ["Gender:", registration.gender || ""],
-      ["Caste:", registration.caste || ""],
-      ["State:", registration.state || ""],
-      ["Orphan:", registration.orphan ? "Yes" : "No"],
-      ["Disabled:", registration.disabled ? "Yes" : "No"],
-    ];
-    // Print left column
-    let leftY = y;
-    leftFields.forEach(([label, value]) => {
-      doc.font("Times-Bold").text(label, leftColX, leftY, { continued: true });
-      doc.font("Times-Roman").text(` ${value}`, { width: 200 });
-      leftY = doc.y + 2; // move to next line after wrapped text
-    });
-    // Print right column, aligning with left column's starting y
-    let rightY = y;
-    rightFields.forEach(([label, value]) => {
+
+    // Draw table headers and background
+    doc
+      .rect(35, tableTop - 5, 520, 20)
+      .fillOpacity(0.1)
+      .fill("#E0E0E0")
+      .fillOpacity(1);
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(11)
+      .fillColor("#333333")
+      .text("Field", col1X, tableTop, { width: labelWidth })
+      .text("Details", col2X, tableTop, { width: valueWidth });
+
+    // Draw student details in a table-like format
+    let currentY = tableTop + rowHeight;
+    studentFields.forEach(([label, value], index) => {
+      if (index % 2 === 0) {
+        doc
+          .rect(35, currentY - 5, 520, rowHeight)
+          .fillOpacity(0.05)
+          .fill("#F5F5F5")
+          .fillOpacity(1);
+      }
       doc
-        .font("Times-Bold")
-        .text(label, rightColX, rightY, { continued: true });
-      doc.font("Times-Roman").text(` ${value}`, { width: 180 });
-      rightY = doc.y + 2;
+        .font("Helvetica-Bold")
+        .fontSize(10)
+        .fillColor("#333333")
+        .text(label, col1X, currentY, { width: labelWidth, align: "left" });
+      doc
+        .font("Helvetica")
+        .text(value, col2X, currentY, { width: valueWidth * 2, align: "left" });
+      currentY += rowHeight;
     });
-    // Move down to the lower of the two columns
-    doc.y = Math.max(leftY, rightY) + 10;
+
+    // Draw table border
+    doc
+      .rect(35, tableTop - 5, 520, currentY - tableTop)
+      .lineWidth(0.5)
+      .strokeColor("#CCCCCC")
+      .stroke();
+    doc.moveDown(2);
 
     // Book Request Details Section
     doc
+      .font("Helvetica-Bold")
       .fontSize(14)
-      .font("Times-Bold")
-      .text("Book Request Details", leftColX, doc.y, { underline: true });
-    doc.moveDown(0.5);
-    doc.fontSize(12);
-    let bookY = doc.y;
-    doc.font("Times-Bold").text("Year of Study:", leftColX, bookY);
-    doc.font("Times-Roman").text(app.yearOfStudy, leftColX + 120, bookY);
-    doc.font("Times-Bold").text("Field:", leftColX, bookY + rowHeight);
-    doc.font("Times-Roman").text(app.field, leftColX + 120, bookY + rowHeight);
+      .fillColor("#003087")
+      .text("Book Request Details", 40, doc.y, { underline: true })
+      .moveDown(0.5);
+
+    // Book details in a table-like format
+    const bookTableTop = doc.y;
+    const bookFields = [
+      ["Year of Study", app.yearOfStudy || "N/A"],
+      ["Field", app.field || "N/A"],
+      ["Books Required", ""], // Books will be listed separately
+    ];
+
+    // Draw book details table
     doc
-      .font("Times-Bold")
-      .text("Books Required:", leftColX, bookY + rowHeight * 2, {
-        continued: false,
-      });
-    // Parse booksRequired string and print each book as 'Book Name - Type' (no brackets, keep 'jn' in book name)
-    let booksRequiredClean = app.booksRequired
+      .rect(35, bookTableTop - 5, 520, 20)
+      .fillOpacity(0.1)
+      .fill("#E0E0E0")
+      .fillOpacity(1);
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(11)
+      .fillColor("#333333")
+      .text("Field", col1X, bookTableTop, { width: labelWidth })
+      .text("Details", col2X, bookTableTop, { width: valueWidth });
+
+    currentY = bookTableTop + rowHeight;
+    bookFields.forEach(([label, value], index) => {
+      if (label === "Books Required") return; // Handle books separately
+      if (index % 2 === 0) {
+        doc
+          .rect(35, currentY - 5, 520, rowHeight)
+          .fillOpacity(0.05)
+          .fill("#F5F5F5")
+          .fillOpacity(1);
+      }
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(10)
+        .fillColor("#333333")
+        .text(label, col1X, currentY, { width: labelWidth, align: "left" });
+      doc
+        .font("Helvetica")
+        .text(value, col2X, currentY, { width: valueWidth * 2, align: "left" });
+      currentY += rowHeight;
+    });
+
+    // Parse and list books required
+    const booksRequiredClean = app.booksRequired
       .split(",")
       .map((b) => {
         let match = b.match(/(.+?)\s*\((Textbook|Guide)\)/i);
         if (match) {
-          let name = match[1].trim(); // keep full book name, including 'jn' if present
+          let name = match[1].trim();
           let type = match[2];
           return `${name} - ${type}`;
-        } else {
-          return b.trim();
         }
-      })
-      .join("\n");
-    doc
-      .font("Times-Roman")
-      .text(booksRequiredClean, leftColX + 120, bookY + rowHeight * 2, {
-        width: 400,
+        return b.trim();
       });
-    doc.moveDown(3);
 
+    // Draw books required as a numbered list with visible font color
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(10)
+      .fillColor("#333333") // Ensure label is visible
+      .text("Books Required", col1X, currentY, { width: labelWidth });
+    booksRequiredClean.forEach((book, index) => {
+      if (index % 2 === 0) {
+        doc
+          .rect(35, currentY - 5, 520, rowHeight)
+          .fillOpacity(0.05)
+          .fill("#F5F5F5")
+          .fillOpacity(1);
+      }
+      doc
+        .font("Helvetica")
+        .fontSize(10)
+        .fillColor("#333333") // Ensure book items are visible
+        .text(`${index + 1}. ${book}`, col2X, currentY, {
+          width: valueWidth * 2,
+          align: "left",
+        });
+      currentY += rowHeight;
+    });
+
+    // Draw book table border
+    doc
+      .rect(35, bookTableTop - 5, 520, currentY - bookTableTop)
+      .lineWidth(0.5)
+      .strokeColor("#CCCCCC")
+      .stroke();
+    doc.moveDown(2);
+
+    // Footer
+    const pageHeight = doc.page.height;
+    doc
+      .font("Helvetica")
+      .fontSize(8)
+      .fillColor("#666666")
+      .text(
+        "Vivekanand Seva Mandal | Contact: info@vsm.org | Page 1 of 1",
+        40,
+        pageHeight - 50,
+        { align: "center" }
+      );
+
+    // Finalize PDF
     doc.end();
   } catch (err) {
     console.error(err);
