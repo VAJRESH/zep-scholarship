@@ -30,41 +30,26 @@ import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ThemeToggle } from "./components/ui";
 
+// Utility to check token validity
+const isTokenValid = () => {
+  const token = localStorage.getItem("token");
+  // If using JWT, decode and check expiry here
+  return !!token;
+};
+
 // User-only route component
 const UserRoute = ({ children }) => {
   const userRole = localStorage.getItem("userRole");
-  const token = localStorage.getItem("token");
-
-  // Redirect to login if not authenticated
-  if (!token) {
-    return <Navigate to="/login" />;
-  }
-
-  // Redirect admins to dashboard
-  if (userRole === "admin") {
-    return <Navigate to="/admin" />;
-  }
-
-  // Allow access for regular users
+  if (!isTokenValid()) return <Navigate to="/login" replace />;
+  if (userRole === "admin") return <Navigate to="/admin" replace />;
   return children;
 };
 
 // Admin-only route component
 const AdminRoute = ({ children }) => {
   const userRole = localStorage.getItem("userRole");
-  const token = localStorage.getItem("token");
-
-  // Redirect to login if not authenticated
-  if (!token) {
-    return <Navigate to="/login" />;
-  }
-
-  // Redirect non-admins to options
-  if (userRole !== "admin") {
-    return <Navigate to="/options" />;
-  }
-
-  // Allow access for admins
+  if (!isTokenValid()) return <Navigate to="/login" replace />;
+  if (userRole !== "admin") return <Navigate to="/options" replace />;
   return children;
 };
 

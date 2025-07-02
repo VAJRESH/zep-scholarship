@@ -11,6 +11,24 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const handlePopState = () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/", { replace: true });
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [navigate]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/", { replace: true });
+    }
+  }, [navigate]);
+
+  useEffect(() => {
     async function fetchUsers() {
       try {
         const token = localStorage.getItem("token");
@@ -110,7 +128,7 @@ const AdminDashboard = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card
-          className="bg-gradient-to-br from-blue-500 to-blue-600 text-white"
+          className="bg-white border border-blue-200 shadow-lg text-gray-900 dark:bg-gradient-to-br dark:from-blue-500 dark:to-blue-600 dark:text-white"
           padding="normal"
           shadow="lg"
         >
@@ -139,7 +157,7 @@ const AdminDashboard = () => {
         </Card>
 
         <Card
-          className="bg-gradient-to-br from-green-500 to-green-600 text-white"
+          className="bg-white border border-green-200 shadow-lg text-gray-900 dark:bg-gradient-to-br dark:from-green-500 dark:to-green-600 dark:text-white"
           padding="normal"
           shadow="lg"
         >
@@ -168,7 +186,7 @@ const AdminDashboard = () => {
         </Card>
 
         <Card
-          className="bg-gradient-to-br from-purple-500 to-purple-600 text-white"
+          className="bg-white border border-purple-200 shadow-lg text-gray-900 dark:bg-gradient-to-br dark:from-purple-500 dark:to-purple-600 dark:text-white"
           padding="normal"
           shadow="lg"
         >

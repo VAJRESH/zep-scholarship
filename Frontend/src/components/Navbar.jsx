@@ -36,15 +36,15 @@ const Navbar = () => {
     localStorage.removeItem("userRole");
     setIsLoggedIn(false);
     setUserRole(null);
-    navigate("/");
+    navigate("/", { replace: true });
   };
 
   return (
     <nav
       className={`fixed w-full z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-lg"
-          : "bg-transparent"
+          ? "bg-white shadow-lg dark:bg-gray-800/90 backdrop-blur-sm"
+          : "bg-white shadow dark:bg-transparent"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -66,7 +66,7 @@ const Navbar = () => {
                       d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
                     />
                   </svg>
-                  <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                  <span className="text-xl font-bold text-blue-700 dark:text-blue-400">
                     Scholarship Portal
                   </span>
                 </>
@@ -102,25 +102,25 @@ const Navbar = () => {
               <div className="hidden md:flex ml-10 space-x-8">
                 <Link
                   to="/about-us"
-                  className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors duration-200"
+                  className="text-gray-900 dark:text-gray-200 hover:text-blue-700 dark:hover:text-blue-400 font-medium transition-colors duration-200"
                 >
                   About Us
                 </Link>
                 <Link
                   to="/how-to-apply"
-                  className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors duration-200"
+                  className="text-gray-900 dark:text-gray-200 hover:text-blue-700 dark:hover:text-blue-400 font-medium transition-colors duration-200"
                 >
                   How to Apply
                 </Link>
                 <Link
                   to="/faq"
-                  className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors duration-200"
+                  className="text-gray-900 dark:text-gray-200 hover:text-blue-700 dark:hover:text-blue-400 font-medium transition-colors duration-200"
                 >
                   FAQ
                 </Link>
                 <Link
                   to="/contact"
-                  className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors duration-200"
+                  className="text-gray-900 dark:text-gray-200 hover:text-blue-700 dark:hover:text-blue-400 font-medium transition-colors duration-200"
                 >
                   Contact
                 </Link>

@@ -1,9 +1,27 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "./ui";
 
 const Options = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/", { replace: true });
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [navigate]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/", { replace: true });
+    }
+  }, [navigate]);
 
   // Custom SVG icons
   const icons = {
@@ -108,25 +126,37 @@ const Options = () => {
         shadow="xl"
         padding="large"
         rounded="xl"
-        className="border border-gray-200 dark:border-gray-700 max-w-full"
+        className="border border-gray-300 dark:border-gray-700 max-w-full"
       >
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
           {scholarshipOptions.map((option, index) => (
             <div
               key={index}
               onClick={() => navigate(option.path)}
-              className={`cursor-pointer p-5 rounded-lg ${option.color} ${option.hoverColor} transition-all duration-200 transform hover:scale-[1.02] border border-transparent hover:border-opacity-50 hover:border-current flex flex-col h-full`}
+              className={`cursor-pointer p-5 rounded-lg shadow-lg ${option.color
+                .replace("bg-blue-50", "bg-blue-50 border border-blue-200")
+                .replace("bg-green-50", "bg-green-50 border border-green-200")
+                .replace(
+                  "bg-purple-50",
+                  "bg-purple-50 border border-purple-200"
+                )} ${
+                option.hoverColor
+              } transition-all duration-200 transform hover:scale-[1.02] flex flex-col h-full`}
             >
               <div className="p-3 rounded-full bg-white dark:bg-gray-800 bg-opacity-70 dark:bg-opacity-70 self-start mb-3">
                 {option.icon}
               </div>
-              <h3 className="font-semibold text-lg">{option.title}</h3>
-              <p className="mt-2 opacity-80 flex-grow">{option.description}</p>
+              <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
+                {option.title}
+              </h3>
+              <p className="mt-2 flex-grow text-gray-700 dark:text-gray-300">
+                {option.description}
+              </p>
               <div className="mt-4 self-end">{icons.arrowRight}</div>
             </div>
           ))}
         </div>
-        <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+        <div className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
           Need help choosing? Contact student support at support@university.edu
         </div>
       </Card>
