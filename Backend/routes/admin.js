@@ -119,10 +119,15 @@ router.post("/approve/study-books/:id", [auth, adminAuth], async (req, res) => {
 router.get("/download/study-books/:id", [auth, adminAuth], async (req, res) => {
   try {
     // Fetch application and registration data
-    const app = await StudyBooksApplication.findById(req.params.id).populate("user");
+    const app = await StudyBooksApplication.findById(req.params.id).populate(
+      "user"
+    );
     if (!app) return res.status(404).json({ msg: "Application not found" });
-    const registration = await StudentRegistration.findOne({ user: app.user._id });
-    if (!registration) return res.status(404).json({ msg: "Student registration not found" });
+    const registration = await StudentRegistration.findOne({
+      user: app.user._id,
+    });
+    if (!registration)
+      return res.status(404).json({ msg: "Student registration not found" });
 
     // Initialize PDF with options
     const doc = new PDFDocument({
@@ -289,17 +294,15 @@ router.get("/download/study-books/:id", [auth, adminAuth], async (req, res) => {
     });
 
     // Parse and list books required
-    const booksRequiredClean = app.booksRequired
-      .split(",")
-      .map((b) => {
-        let match = b.match(/(.+?)\s*\((Textbook|Guide)\)/i);
-        if (match) {
-          let name = match[1].trim();
-          let type = match[2];
-          return `${name} - ${type}`;
-        }
-        return b.trim();
-      });
+    const booksRequiredClean = app.booksRequired.split(",").map((b) => {
+      let match = b.match(/(.+?)\s*\((Textbook|Guide)\)/i);
+      if (match) {
+        let name = match[1].trim();
+        let type = match[2];
+        return `${name} - ${type}`;
+      }
+      return b.trim();
+    });
 
     // Draw books required as a numbered list with visible font color
     doc
@@ -352,6 +355,184 @@ router.get("/download/study-books/:id", [auth, adminAuth], async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: err.message || "Server error" });
+  }
+});
+
+// Download School Fees Application as PDF
+router.get("/download/school-fees/:id", [auth, adminAuth], async (req, res) => {
+  try {
+    // Fetch application and registration data
+    const app = await SchoolFeesApplication.findById(req.params.id).populate(
+      "user"
+    );
+    if (!app) return res.status(404).json({ msg: "Application not found" });
+    const registration = await StudentRegistration.findOne({
+      user: app.user._id,
+    });
+    if (!registration)
+      return res.status(404).json({ msg: "Student registration not found" });
+
+    const doc = new PDFDocument({
+      margin: 40,
+      size: "A4",
+      info: {
+        Title: `School Fees Application - ${app._id}`,
+        Author: "Vivekanand Seva Mandal",
+      },
+    });
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=school-fees-application-${app._id}.pdf`
+    );
+    doc.pipe(res);
+
+    // Helper function to draw a horizontal line
+    const drawLine = (y, xStart = 40, xEnd = 555) => {
+      doc.moveTo(xStart, y).lineTo(xEnd, y).lineWidth(1).stroke();
+    };
+
+    // Header Section
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(24)
+      .fillColor("#003087")
+      .text("Vivekanand Seva Mandal", { align: "center" })
+      .moveDown(0.3);
+    doc
+      .fontSize(16)
+      .fillColor("#333333")
+      .text("School Fees Scholarship Application", { align: "center" })
+      .moveDown(0.5);
+    drawLine(doc.y + 10);
+    doc.moveDown(1);
+
+    // Student Details Section
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(14)
+      .fillColor("#003087")
+      .text("Student Details", 40, doc.y, { underline: true })
+      .moveDown(0.5);
+
+    // Table-like layout for student details
+    const tableTop = doc.y;
+    const col1X = 40;
+    const col2X = 200;
+    const rowHeight = 20;
+    const labelWidth = 150;
+    const valueWidth = 150;
+
+    // Define student details fields
+    const studentFields = [
+      ["Academic Year", registration.academicYear || "N/A"],
+      ["Date", registration.date ? registration.date.toDateString() : "N/A"],
+      ["Applicant Name", registration.applicantName || "N/A"],
+      ["Mother's Name", registration.motherName || "N/A"],
+      ["DOB", registration.dob ? registration.dob.toDateString() : "N/A"],
+      ["Gender", registration.gender || "N/A"],
+      ["Caste", registration.caste || "N/A"],
+      ["College Name", registration.collegeName || "N/A"],
+      ["Course Name", registration.courseName || "N/A"],
+      ["Address", registration.address || "N/A"],
+      ["State", registration.state || "N/A"],
+      ["Orphan", registration.orphan ? "Yes" : "No"],
+      ["Disabled", registration.disabled ? "Yes" : "No"],
+    ];
+
+    // Draw table headers and background
+    doc
+      .rect(35, tableTop - 5, 520, 20)
+      .fillOpacity(0.1)
+      .fill("#E0E0E0")
+      .fillOpacity(1);
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(11)
+      .fillColor("#333333")
+      .text("Field", col1X, tableTop, { width: labelWidth })
+      .text("Details", col2X, tableTop, { width: valueWidth });
+
+    // Draw student details in a table-like format
+    let currentY = tableTop + rowHeight;
+    studentFields.forEach(([label, value], index) => {
+      if (index % 2 === 0) {
+        doc
+          .rect(35, currentY - 5, 520, rowHeight)
+          .fillOpacity(0.05)
+          .fill("#F5F5F5")
+          .fillOpacity(1);
+      }
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(10)
+        .fillColor("#333333")
+        .text(label, col1X, currentY, { width: labelWidth, align: "left" });
+      doc
+        .font("Helvetica")
+        .text(value, col2X, currentY, { width: valueWidth * 2, align: "left" });
+      currentY += rowHeight;
+    });
+
+    // Draw table border
+    doc
+      .rect(35, tableTop - 5, 520, currentY - tableTop)
+      .lineWidth(0.5)
+      .strokeColor("#CCCCCC")
+      .stroke();
+    doc.moveDown(2);
+
+    // Uploaded Documents Section
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(14)
+      .fillColor("#003087")
+      .text("Uploaded Documents", 40, doc.y, { underline: true })
+      .moveDown(0.5);
+
+    const docFields = [
+      ["Birth Certificate", app.birthCertificate],
+      ["Leaving Certificate", app.leavingCertificate],
+      ["Marksheet", app.marksheet],
+      ["Admission Proof", app.admissionProof],
+      ["Income Proof", app.incomeProof],
+      ["Bank Account Details", app.bankAccount],
+      ["Ration Card", app.rationCard],
+    ];
+    doc.font("Helvetica").fontSize(11).fillColor("#222");
+    doc.moveDown(0.2);
+    const baseUrl = req.protocol + "://" + req.get("host");
+    docFields.forEach(([label, url]) => {
+      if (url) {
+        const fullUrl = url.startsWith("http") ? url : baseUrl + url;
+        doc.text(`${label}: `, {
+          continued: true,
+          underline: false,
+          link: undefined,
+        });
+        doc.fillColor("blue").text("Link", { link: fullUrl, underline: true });
+        doc.fillColor("#222");
+      }
+    });
+    doc.moveDown(2);
+
+    // Footer
+    doc
+      .font("Helvetica-Oblique")
+      .fontSize(10)
+      .fillColor("#888888")
+      .text(
+        "This is a system-generated document. All uploaded documents are available at the above links.",
+        40,
+        doc.y,
+        { align: "left" }
+      );
+
+    doc.end();
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
   }
 });
 

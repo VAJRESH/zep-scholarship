@@ -85,6 +85,31 @@ const UserDetail = () => {
     }
   };
 
+  const handleDownloadSchoolFeesPDF = async (appId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `/api/admin/download/school-fees/${appId}`,
+        {
+          headers: { "x-auth-token": token },
+          responseType: "blob",
+        }
+      );
+      const url = window.URL.createObjectURL(
+        new Blob([response.data], { type: "application/pdf" })
+      );
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `school-fees-application-${appId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Failed to download PDF.");
+    }
+  };
+
   const handleApproveApplication = async (app) => {
     try {
       const token = localStorage.getItem("token");
@@ -391,6 +416,27 @@ const UserDetail = () => {
                 )}
               </div>
             </div>
+            <button
+              onClick={() => handleDownloadSchoolFeesPDF(app._id)}
+              className="ml-2 px-3 py-1.5 text-sm font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800 transition"
+              title="Download Application PDF"
+            >
+              <svg
+                className="w-4 h-4 mr-1 inline"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
+              </svg>
+              Download PDF
+            </button>
           </div>
         );
       case "travelExpenses":
