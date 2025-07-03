@@ -110,6 +110,31 @@ const UserDetail = () => {
     }
   };
 
+  const handleDownloadTravelExpensesPDF = async (appId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `/api/admin/download/travel-expenses/${appId}`,
+        {
+          headers: { "x-auth-token": token },
+          responseType: "blob",
+        }
+      );
+      const url = window.URL.createObjectURL(
+        new Blob([response.data], { type: "application/pdf" })
+      );
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `travel-expenses-application-${appId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Failed to download PDF.");
+    }
+  };
+
   const handleApproveApplication = async (app) => {
     try {
       const token = localStorage.getItem("token");
@@ -1241,6 +1266,29 @@ const UserDetail = () => {
                   <button
                     onClick={() => handleDownloadStudyBooksPDF(app._id)}
                     className="ml-2 px-3 py-1.5 text-sm font-medium rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 hover:bg-purple-200 dark:hover:bg-purple-800 transition"
+                    title="Download Application PDF"
+                  >
+                    <svg
+                      className="w-4 h-4 mr-1 inline"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
+                    Download PDF
+                  </button>
+                )}
+                {app.applicationType === "travelExpenses" && (
+                  <button
+                    onClick={() => handleDownloadTravelExpensesPDF(app._id)}
+                    className="ml-2 px-3 py-1.5 text-sm font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 hover:bg-green-200 dark:hover:bg-green-800 transition"
                     title="Download Application PDF"
                   >
                     <svg

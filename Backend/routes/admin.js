@@ -536,4 +536,299 @@ router.get("/download/school-fees/:id", [auth, adminAuth], async (req, res) => {
   }
 });
 
+// Download Travel Expenses Application as PDF
+router.get("/download/travel-expenses/:id", [auth, adminAuth], async (req, res) => {
+  let pdfStreamed = false;
+  try {
+    // Fetch application and registration data
+    const app = await TravelExpensesApplication.findById(req.params.id).populate("user");
+    if (!app) {
+      console.error(`Application not found for ID: ${req.params.id}`);
+      return res.status(404).type("application/json").send(JSON.stringify({ msg: "Application not found" }));
+    }
+    const registration = await StudentRegistration.findOne({ user: app.user._id });
+    if (!registration) {
+      console.error(`Student registration not found for user ID: ${app.user._id}`);
+      return res.status(404).type("application/json").send(JSON.stringify({ msg: "Student registration not found" }));
+    }
+
+    const doc = new PDFDocument({
+      margin: 30,
+      size: "A4",
+      info: {
+        Title: `Travel Expenses Application - ${app._id}`,
+        Author: "Vivekanand Seva Mandal",
+      },
+    });
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=travel-expenses-application-${app._id}.pdf`
+    );
+    pdfStreamed = true;
+    doc.pipe(res);
+
+    // Helper function to draw a horizontal line
+    const drawLine = (y, xStart = 30, xEnd = 565) => {
+      doc.moveTo(xStart, y).lineTo(xEnd, y).lineWidth(1).stroke();
+    };
+
+    // Helper function to calculate wrapped text height
+    const getTextHeight = (text, font, fontSize, width) => {
+      if (!text || typeof text !== 'string') return 14;
+      doc.font(font).fontSize(fontSize);
+      return doc.heightOfString(text, { width }) + 4;
+    };
+
+    // Helper function to check and add new page if needed
+    const checkPageOverflow = (requiredHeight) => {
+      const pageHeight = doc.page.height - 60; // More margin for footer
+      if (doc.y + requiredHeight > pageHeight) {
+        doc.addPage();
+        return 40; // Start position on new page
+      }
+      return doc.y;
+    };
+
+    // Header Section
+    let currentY = 40;
+    doc.y = currentY;
+    
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(18)
+      .fillColor("#003087")
+      .text("Vivekanand Seva Mandal", { align: "center" });
+    
+    currentY = doc.y + 8;
+    doc.y = currentY;
+    
+    doc
+      .fontSize(12)
+      .fillColor("#333333")
+      .text("Travel Expenses Scholarship Application", { align: "center" });
+    
+    currentY = doc.y + 15;
+    drawLine(currentY);
+    currentY += 20;
+
+    // Student Details Section
+    currentY = checkPageOverflow(30);
+    doc.y = currentY;
+    
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(11)
+      .fillColor("#003087")
+      .text("Student Details", 30, currentY, { underline: true });
+    
+    currentY = doc.y + 15;
+
+    const col1X = 30;
+    const col2X = 160;
+    const labelWidth = 120;
+    const valueWidth = 405;
+    const minRowHeight = 16;
+    const maxRowHeight = 60;
+
+    const studentFields = [
+      ["Academic Year", (registration.academicYear || "N/A").toString()],
+      ["Date", registration.date ? registration.date.toDateString() : "N/A"],
+      ["Applicant Name", (registration.applicantName || "N/A").toString()],
+      ["Mother's Name", (registration.motherName || "N/A").toString()],
+      ["DOB", registration.dob ? registration.dob.toDateString() : "N/A"],
+      ["Gender", (registration.gender || "N/A").toString()],
+      ["Caste", (registration.caste || "N/A").toString()],
+      ["College Name", (registration.collegeName || "N/A").toString()],
+      ["Course Name", (registration.courseName || "N/A").toString()],
+      ["Address", (registration.address || "N/A").toString()],
+      ["State", (registration.state || "N/A").toString()],
+      ["Orphan", registration.orphan ? "Yes" : "No"],
+      ["Disabled", registration.disabled ? "Yes" : "No"],
+    ];
+
+    // Calculate total table height needed
+    const totalTableHeight = (studentFields.length + 1) * minRowHeight + 20;
+    currentY = checkPageOverflow(totalTableHeight);
+
+    const tableTop = currentY;
+
+    // Draw table header
+    doc
+      .rect(25, tableTop, 540, minRowHeight)
+      .fillOpacity(0.1)
+      .fill("#E0E0E0")
+      .fillOpacity(1);
+    
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(9)
+      .fillColor("#333333")
+      .text("Field", col1X, tableTop + 4, { width: labelWidth })
+      .text("Details", col2X, tableTop + 4, { width: valueWidth });
+
+    currentY = tableTop + minRowHeight;
+
+    studentFields.forEach(([label, value], index) => {
+      // Calculate dynamic row height
+      const labelHeight = getTextHeight(label, "Helvetica-Bold", 9, labelWidth);
+      const valueHeight = getTextHeight(value, "Helvetica", 9, valueWidth);
+      const rowHeight = Math.min(maxRowHeight, Math.max(minRowHeight, Math.max(labelHeight, valueHeight)));
+
+      // Check for page overflow before drawing row
+      if (currentY + rowHeight > doc.page.height - 60) {
+        doc.addPage();
+        currentY = 40;
+      }
+
+      // Alternate row background
+      if (index % 2 === 0) {
+        doc
+          .rect(25, currentY, 540, rowHeight)
+          .fillOpacity(0.05)
+          .fill("#F5F5F5")
+          .fillOpacity(1);
+      }
+
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(9)
+        .fillColor("#333333")
+        .text(label || "N/A", col1X, currentY + 4, { width: labelWidth, align: "left" });
+      
+      doc
+        .font("Helvetica")
+        .text(value || "N/A", col2X, currentY + 4, { width: valueWidth, align: "left" });
+      
+      currentY += rowHeight;
+    });
+
+    // Draw table border
+    doc
+      .rect(25, tableTop, 540, currentY - tableTop)
+      .lineWidth(0.5)
+      .strokeColor("#CCCCCC")
+      .stroke();
+
+    currentY += 25; // Space after table
+
+    // Travel Expense Details Section
+    currentY = checkPageOverflow(30);
+    doc.y = currentY;
+    
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(11)
+      .fillColor("#003087")
+      .text("Travel Expense Details", 30, currentY, { underline: true });
+    
+    currentY = doc.y + 15;
+
+    const travelFields = [
+      ["Residence Place", (app.residencePlace || "N/A").toString()],
+      ["Destination Place", (app.destinationPlace || "N/A").toString()],
+      ["Distance (km)", app.distance != null ? app.distance.toString() : "N/A"],
+      ["Travel Mode", (app.travelMode || "N/A").toString()],
+      ["Aid Required (Rs)", app.aidRequired != null ? app.aidRequired.toString() : "N/A"],
+      ["ID Card", (app.idCard || "N/A").toString()],
+      ["Status", (app.status || "N/A").toString()],
+      ["Applied On", app.createdAt ? app.createdAt.toDateString() : "N/A"],
+    ];
+
+    // Calculate total travel table height needed
+    const totalTravelTableHeight = (travelFields.length + 1) * minRowHeight + 20;
+    currentY = checkPageOverflow(totalTravelTableHeight);
+
+    const travelTableTop = currentY;
+
+    // Draw travel table header
+    doc
+      .rect(25, travelTableTop, 540, minRowHeight)
+      .fillOpacity(0.1)
+      .fill("#E0E0E0")
+      .fillOpacity(1);
+    
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(9)
+      .fillColor("#333333")
+      .text("Field", col1X, travelTableTop + 4, { width: labelWidth })
+      .text("Details", col2X, travelTableTop + 4, { width: valueWidth });
+
+    currentY = travelTableTop + minRowHeight;
+
+    travelFields.forEach(([label, value], index) => {
+      // Calculate dynamic row height
+      const labelHeight = getTextHeight(label, "Helvetica-Bold", 9, labelWidth);
+      const valueHeight = getTextHeight(value, "Helvetica", 9, valueWidth);
+      const rowHeight = Math.min(maxRowHeight, Math.max(minRowHeight, Math.max(labelHeight, valueHeight)));
+
+      // Check for page overflow before drawing row
+      if (currentY + rowHeight > doc.page.height - 60) {
+        doc.addPage();
+        currentY = 40;
+      }
+
+      // Alternate row background
+      if (index % 2 === 0) {
+        doc
+          .rect(25, currentY, 540, rowHeight)
+          .fillOpacity(0.05)
+          .fill("#F5F5F5")
+          .fillOpacity(1);
+      }
+
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(9)
+        .fillColor("#333333")
+        .text(label || "N/A", col1X, currentY + 4, { width: labelWidth, align: "left" });
+      
+      doc
+        .font("Helvetica")
+        .text(value || "N/A", col2X, currentY + 4, { width: valueWidth, align: "left" });
+      
+      currentY += rowHeight;
+    });
+
+    // Draw travel table border
+    doc
+      .rect(25, travelTableTop, 540, currentY - travelTableTop)
+      .lineWidth(0.5)
+      .strokeColor("#CCCCCC")
+      .stroke();
+
+    // Footer - Add to each page
+    const addFooter = (pageNum) => {
+      const pageHeight = doc.page.height;
+      doc
+        .font("Helvetica")
+        .fontSize(8)
+        .fillColor("#666666")
+        .text(
+          `Vivekanand Seva Mandal | Contact: info@vsm.org | Page ${pageNum}`,
+          30,
+          pageHeight - 30,
+          { align: "center" }
+        );
+    };
+
+    // Add footer to all pages
+    const pageCount = doc.bufferedPageRange().count;
+    for (let i = 0; i < pageCount; i++) {
+      doc.switchToPage(i);
+      addFooter(i + 1);
+    }
+
+    doc.end();
+  } catch (err) {
+    console.error(`Error generating PDF: ${err.message}`);
+    if (!pdfStreamed) {
+      res.status(500).type("application/json").send(JSON.stringify({ msg: err.message || "Server error" }));
+    } else {
+      res.destroy && res.destroy();
+    }
+  }
+});
 module.exports = router;
