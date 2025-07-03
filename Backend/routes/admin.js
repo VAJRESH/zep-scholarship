@@ -492,20 +492,20 @@ router.get("/download/school-fees/:id", [auth, adminAuth], async (req, res) => {
       .moveDown(0.5);
 
     const docFields = [
-      ["Birth Certificate", app.birthCertificate],
-      ["Leaving Certificate", app.leavingCertificate],
-      ["Marksheet", app.marksheet],
-      ["Admission Proof", app.admissionProof],
-      ["Income Proof", app.incomeProof],
-      ["Bank Account Details", app.bankAccount],
-      ["Ration Card", app.rationCard],
+      ["Birth Certificate", "birthCertificate"],
+      ["Leaving Certificate", "leavingCertificate"],
+      ["Marksheet", "marksheet"],
+      ["Admission Proof", "admissionProof"],
+      ["Income Proof", "incomeProof"],
+      ["Bank Account Details", "bankAccount"],
+      ["Ration Card", "rationCard"],
     ];
     doc.font("Helvetica").fontSize(11).fillColor("#222");
     doc.moveDown(0.2);
     const baseUrl = req.protocol + "://" + req.get("host");
-    docFields.forEach(([label, url]) => {
-      if (url) {
-        const fullUrl = url.startsWith("http") ? url : baseUrl + url;
+    docFields.forEach(([label, field]) => {
+      if (app[field] && app[field].data) {
+        const fullUrl = `${baseUrl}/api/admin/school-fees/${app._id}/file/${field}`;
         doc.text(`${label}: `, {
           continued: true,
           underline: false,
@@ -531,9 +531,47 @@ router.get("/download/school-fees/:id", [auth, adminAuth], async (req, res) => {
 
     doc.end();
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server error");
+    console.error(err);
+    if (doc && !doc.ended)
+      try {
+        doc.end();
+      } catch (e) {}
+    res.status(500).json({ msg: err.message || "Server error" });
   }
 });
+
+// GET /api/admin/school-fees/:appId/file/:fieldName
+router.get(
+  "/school-fees/:appId/file/:fieldName",
+  [auth, adminAuth],
+  async (req, res) => {
+    try {
+      const { appId, fieldName } = req.params;
+      const app = await SchoolFeesApplication.findById(appId);
+      if (!app || !app[fieldName] || !app[fieldName].data) {
+        return res.status(404).json({ msg: "File not found" });
+      }
+      const fileBuffer = Buffer.isBuffer(app[fieldName].data)
+        ? app[fieldName].data
+        : Buffer.from(app[fieldName].data);
+
+      res.setHeader("Content-Type", app[fieldName].contentType);
+      res.setHeader("Content-Length", fileBuffer.length);
+      const dispositionType =
+        app[fieldName].contentType.startsWith("image/") ||
+        app[fieldName].contentType === "application/pdf"
+          ? "inline"
+          : "attachment";
+      res.setHeader(
+        "Content-Disposition",
+        `${dispositionType}; filename=\"${app[fieldName].fileName}\"`
+      );
+      res.send(fileBuffer);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send("Server error");
+    }
+  }
+);
 
 module.exports = router;
