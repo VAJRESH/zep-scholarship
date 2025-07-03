@@ -157,13 +157,68 @@ const UserDetail = () => {
     }
   };
 
-  const handleDirectDownload = (url, title) => {
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = title ? title.replace(/\s+/g, "_") : "document";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handlePreviewDocument = async (url, title) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(url, {
+        headers: { "x-auth-token": token },
+        responseType: "blob",
+      });
+      const contentType = response.headers["content-type"];
+      // Try to extract filename from Content-Disposition header
+      let fileName = title;
+      const disposition = response.headers["content-disposition"];
+      if (disposition) {
+        const match = disposition.match(/filename="?([^";]+)"?/);
+        if (match) fileName = match[1];
+      }
+      if (
+        !contentType.startsWith("image/") &&
+        contentType !== "application/pdf"
+      ) {
+        alert(
+          "This document type cannot be previewed in the browser. Please download it instead."
+        );
+        return;
+      }
+      setViewingDocument({
+        blob: response.data,
+        contentType,
+        fileName,
+        url: URL.createObjectURL(response.data),
+        title: fileName,
+      });
+    } catch (err) {
+      alert("Failed to preview document.");
+    }
+  };
+
+  const handleDirectDownload = async (url, title) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(url, {
+        headers: { "x-auth-token": token },
+        responseType: "blob",
+      });
+      let fileName = title;
+      const disposition = response.headers["content-disposition"];
+      if (disposition) {
+        const match = disposition.match(/filename="?([^";]+)"?/);
+        if (match) fileName = match[1];
+      }
+      const blobUrl = window.URL.createObjectURL(
+        new Blob([response.data], { type: response.headers["content-type"] })
+      );
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      alert("Failed to download document.");
+    }
   };
 
   const DocumentCard = ({ title, url, color, onClick }) => {
@@ -245,7 +300,7 @@ const UserDetail = () => {
         <div className="mt-auto pt-2 flex justify-between items-center border-t border-gray-100 dark:border-gray-700">
           <div className="flex space-x-2">
             <button
-              onClick={onClick}
+              onClick={() => handlePreviewDocument(url, title)}
               className="text-xs text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary-dark flex items-center"
             >
               <svg
@@ -348,94 +403,94 @@ const UserDetail = () => {
                 scholarship application.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {app.birthCertificate && (
+                {app.birthCertificate && app.birthCertificate.data && (
                   <DocumentCard
                     title="Birth Certificate"
-                    url={BASE_URL + app.birthCertificate}
+                    url={`${BASE_URL}/api/admin/school-fees/${app._id}/file/birthCertificate`}
                     color="blue"
                     onClick={() =>
-                      setViewingDocument({
-                        url: BASE_URL + app.birthCertificate,
-                        title: "Birth Certificate",
-                      })
+                      handlePreviewDocument(
+                        `${BASE_URL}/api/admin/school-fees/${app._id}/file/birthCertificate`,
+                        "Birth Certificate"
+                      )
                     }
                   />
                 )}
-                {app.leavingCertificate && (
+                {app.leavingCertificate && app.leavingCertificate.data && (
                   <DocumentCard
                     title="Leaving Certificate"
-                    url={BASE_URL + app.leavingCertificate}
+                    url={`${BASE_URL}/api/admin/school-fees/${app._id}/file/leavingCertificate`}
                     color="green"
                     onClick={() =>
-                      setViewingDocument({
-                        url: BASE_URL + app.leavingCertificate,
-                        title: "Leaving Certificate",
-                      })
+                      handlePreviewDocument(
+                        `${BASE_URL}/api/admin/school-fees/${app._id}/file/leavingCertificate`,
+                        "Leaving Certificate"
+                      )
                     }
                   />
                 )}
-                {app.marksheet && (
+                {app.marksheet && app.marksheet.data && (
                   <DocumentCard
                     title="Marksheet"
-                    url={BASE_URL + app.marksheet}
+                    url={`${BASE_URL}/api/admin/school-fees/${app._id}/file/marksheet`}
                     color="purple"
                     onClick={() =>
-                      setViewingDocument({
-                        url: BASE_URL + app.marksheet,
-                        title: "Marksheet",
-                      })
+                      handlePreviewDocument(
+                        `${BASE_URL}/api/admin/school-fees/${app._id}/file/marksheet`,
+                        "Marksheet"
+                      )
                     }
                   />
                 )}
-                {app.admissionProof && (
+                {app.admissionProof && app.admissionProof.data && (
                   <DocumentCard
                     title="Admission Proof"
-                    url={BASE_URL + app.admissionProof}
+                    url={`${BASE_URL}/api/admin/school-fees/${app._id}/file/admissionProof`}
                     color="orange"
                     onClick={() =>
-                      setViewingDocument({
-                        url: BASE_URL + app.admissionProof,
-                        title: "Admission Proof",
-                      })
+                      handlePreviewDocument(
+                        `${BASE_URL}/api/admin/school-fees/${app._id}/file/admissionProof`,
+                        "Admission Proof"
+                      )
                     }
                   />
                 )}
-                {app.incomeProof && (
+                {app.incomeProof && app.incomeProof.data && (
                   <DocumentCard
                     title="Income Proof"
-                    url={BASE_URL + app.incomeProof}
+                    url={`${BASE_URL}/api/admin/school-fees/${app._id}/file/incomeProof`}
                     color="pink"
                     onClick={() =>
-                      setViewingDocument({
-                        url: BASE_URL + app.incomeProof,
-                        title: "Income Proof",
-                      })
+                      handlePreviewDocument(
+                        `${BASE_URL}/api/admin/school-fees/${app._id}/file/incomeProof`,
+                        "Income Proof"
+                      )
                     }
                   />
                 )}
-                {app.bankAccount && (
+                {app.bankAccount && app.bankAccount.data && (
                   <DocumentCard
                     title="Bank Account Details"
-                    url={BASE_URL + app.bankAccount}
+                    url={`${BASE_URL}/api/admin/school-fees/${app._id}/file/bankAccount`}
                     color="indigo"
                     onClick={() =>
-                      setViewingDocument({
-                        url: BASE_URL + app.bankAccount,
-                        title: "Bank Account Details",
-                      })
+                      handlePreviewDocument(
+                        `${BASE_URL}/api/admin/school-fees/${app._id}/file/bankAccount`,
+                        "Bank Account Details"
+                      )
                     }
                   />
                 )}
-                {app.rationCard && (
+                {app.rationCard && app.rationCard.data && (
                   <DocumentCard
                     title="Ration Card"
-                    url={BASE_URL + app.rationCard}
+                    url={`${BASE_URL}/api/admin/school-fees/${app._id}/file/rationCard`}
                     color="teal"
                     onClick={() =>
-                      setViewingDocument({
-                        url: BASE_URL + app.rationCard,
-                        title: "Ration Card",
-                      })
+                      handlePreviewDocument(
+                        `${BASE_URL}/api/admin/school-fees/${app._id}/file/rationCard`,
+                        "Ration Card"
+                      )
                     }
                   />
                 )}
@@ -1316,6 +1371,9 @@ const UserDetail = () => {
       {viewingDocument && (
         <DocumentViewer
           url={viewingDocument.url}
+          blob={viewingDocument.blob}
+          contentType={viewingDocument.contentType}
+          fileName={viewingDocument.fileName}
           title={viewingDocument.title}
           onClose={() => setViewingDocument(null)}
         />

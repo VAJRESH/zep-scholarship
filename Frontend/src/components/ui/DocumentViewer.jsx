@@ -1,45 +1,58 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "./index";
 
-const DocumentViewer = ({ url, title, onClose }) => {
+const DocumentViewer = ({
+  url,
+  blob,
+  contentType,
+  fileName,
+  title,
+  onClose,
+}) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [fileType, setFileType] = useState("unknown");
 
   useEffect(() => {
-    // Reset states when URL changes
     setLoading(true);
     setError("");
-
-    if (!url) {
-      setError("No document URL provided");
+    if (!blob && !url) {
+      setError("No document provided");
       setLoading(false);
       return;
     }
-
-    // Determine file type based on URL
-    const extension = url.split(".").pop().toLowerCase();
-    if (["pdf"].includes(extension)) {
-      setFileType("pdf");
-    } else if (["jpg", "jpeg", "png", "gif", "webp"].includes(extension)) {
-      setFileType("image");
-    } else if (["doc", "docx"].includes(extension)) {
-      setFileType("word");
+    // Detect file type from contentType
+    if (contentType) {
+      if (contentType === "application/pdf") setFileType("pdf");
+      else if (contentType.startsWith("image/")) setFileType("image");
+      else if (contentType.includes("word")) setFileType("word");
+      else setFileType("unknown");
     } else {
       setFileType("unknown");
     }
-
     setLoading(false);
-  }, [url]);
+  }, [blob, url, contentType]);
 
   const handleDownload = () => {
-    // Create a temporary anchor element to trigger download
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = title ? title.replace(/\s+/g, "_") : "document";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    if (blob) {
+      const blobUrl = window.URL.createObjectURL(
+        new Blob([blob], { type: contentType })
+      );
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = fileName || title || "document";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } else if (url) {
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName || title || "document";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
   return (
@@ -124,9 +137,11 @@ const DocumentViewer = ({ url, title, onClose }) => {
             </div>
           ) : (
             <div className="h-full flex flex-col">
-              {fileType === "pdf" && (
+              {fileType === "pdf" && blob && (
                 <object
-                  data={url}
+                  data={URL.createObjectURL(
+                    new Blob([blob], { type: contentType })
+                  )}
                   type="application/pdf"
                   className="w-full h-full min-h-[500px]"
                 >
@@ -142,10 +157,12 @@ const DocumentViewer = ({ url, title, onClose }) => {
                 </object>
               )}
 
-              {fileType === "image" && (
+              {fileType === "image" && blob && (
                 <div className="flex items-center justify-center h-full">
                   <img
-                    src={url}
+                    src={URL.createObjectURL(
+                      new Blob([blob], { type: contentType })
+                    )}
                     alt={title || "Document preview"}
                     className="max-w-full max-h-[70vh] object-contain"
                   />

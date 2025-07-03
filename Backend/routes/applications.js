@@ -9,22 +9,7 @@ const TravelExpensesApplication = require("../models/TravelExpensesApplication")
 const StudyBooksApplication = require("../models/StudyBooksApplication");
 
 // Set up multer for file storage
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const userId = req.user.id;
-    const dir = `./uploads/${userId}`;
-
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-
-    cb(null, dir);
-  },
-  filename: function (req, file, cb) {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
-
+const storage = multer.memoryStorage();
 const upload = multer({
   storage: storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
@@ -68,12 +53,15 @@ router.post("/school-fees", auth, schoolFeesUpload, async (req, res) => {
     }
 
     const fileFields = {};
-
-    // Process uploaded files
+    // Process uploaded files as blobs
     if (req.files) {
       Object.keys(req.files).forEach((fieldName) => {
         const file = req.files[fieldName][0];
-        fileFields[fieldName] = `/uploads/${req.user.id}/${file.filename}`;
+        fileFields[fieldName] = {
+          data: file.buffer,
+          contentType: file.mimetype,
+          fileName: file.originalname,
+        };
       });
     }
 

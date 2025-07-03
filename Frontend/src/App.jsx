@@ -17,6 +17,7 @@ import UserHistory from "./components/UserHistory";
 import Home from "./components/Home";
 import Layout from "./components/Layout";
 import Navbar from "./components/Navbar";
+import SessionManager from "./components/SessionManager";
 
 // New Pages
 import AboutUs from "./components/pages/AboutUs";
@@ -26,10 +27,6 @@ import FAQ from "./components/pages/FAQ";
 import Partners from "./components/pages/Partners";
 import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 import TermsOfService from "./components/pages/TermsOfService";
-
-import { useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { ThemeToggle } from "./components/ui";
 
 // Utility to check token validity
 const isTokenValid = () => {
@@ -58,6 +55,7 @@ const AdminRoute = ({ children }) => {
 function App() {
   return (
     <Router>
+      <SessionManager />
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navbar />
         <Routes>
