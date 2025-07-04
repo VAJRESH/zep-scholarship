@@ -344,6 +344,27 @@ const UserHistory = () => {
     }
   };
 
+  // Add cancel handler
+  const handleCancelApplication = async (appId) => {
+    if (
+      !window.confirm(
+        "Are you sure you want to cancel this application? This action cannot be undone."
+      )
+    )
+      return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`/api/applications/${appId}`, {
+        headers: { "x-auth-token": token },
+      });
+      // Refresh applications
+      setApplications((prev) => prev.filter((a) => a._id !== appId));
+      setError("");
+    } catch (err) {
+      setError("Failed to cancel application. Please try again.");
+    }
+  };
+
   const DocumentCard = ({ title, url, color }) => {
     const colors = {
       blue: {
@@ -667,6 +688,29 @@ const UserHistory = () => {
                   <span className="px-3 py-1.5 text-sm font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                     ID: #{app._id ? app._id.slice(-5) : index + 1}
                   </span>
+                  {app.status !== "approved" && (
+                    <button
+                      onClick={() => handleCancelApplication(app._id)}
+                      className="ml-2 px-3 py-1.5 text-sm font-medium rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800 transition"
+                      title="Cancel Application"
+                    >
+                      <svg
+                        className="w-4 h-4 mr-1 inline"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                      Cancel
+                    </button>
+                  )}
                 </div>
               </div>
               {renderApplicationDetails(app)}

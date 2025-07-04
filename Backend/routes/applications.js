@@ -249,6 +249,36 @@ router.get("/:appId/file/:fieldName", auth, async (req, res) => {
   }
 });
 
+// Student cancels (deletes) their own application
+router.delete('/:appId', auth, async (req, res) => {
+  try {
+    const { appId } = req.params;
+    // Try all application types
+    let app = await SchoolFeesApplication.findById(appId);
+    let model = SchoolFeesApplication;
+    if (!app) {
+      app = await TravelExpensesApplication.findById(appId);
+      model = TravelExpensesApplication;
+    }
+    if (!app) {
+      app = await StudyBooksApplication.findById(appId);
+      model = StudyBooksApplication;
+    }
+    if (!app) {
+      return res.status(404).json({ msg: 'Application not found' });
+    }
+    // Only allow the owner to delete
+    if (app.user.toString() !== req.user.id) {
+      return res.status(403).json({ msg: 'Unauthorized' });
+    }
+    await model.findByIdAndDelete(appId);
+    res.json({ success: true, msg: 'Application cancelled/deleted successfully' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
 // Health check endpoint
 router.get("/health", (req, res) => {
   res.json({ status: "ok", message: "Backend is running" });
