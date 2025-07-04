@@ -212,6 +212,43 @@ router.get("/my-applications", auth, async (req, res) => {
   }
 });
 
+// Student document preview/download endpoint
+router.get("/:appId/file/:fieldName", auth, async (req, res) => {
+  try {
+    const { appId, fieldName } = req.params;
+    // Try all application types
+    let app = await SchoolFeesApplication.findById(appId);
+    if (!app) app = await TravelExpensesApplication.findById(appId);
+    if (!app) app = await StudyBooksApplication.findById(appId);
+    if (!app || !app[fieldName] || !app[fieldName].data) {
+      return res.status(404).json({ msg: "File not found" });
+    }
+    // Check that the user owns this application
+    if (app.user.toString() !== req.user.id) {
+      return res.status(403).json({ msg: "Unauthorized" });
+    }
+    const fileBuffer = Buffer.isBuffer(app[fieldName].data)
+      ? app[fieldName].data
+      : Buffer.from(app[fieldName].data);
+
+    res.setHeader("Content-Type", app[fieldName].contentType);
+    res.setHeader("Content-Length", fileBuffer.length);
+    const dispositionType =
+      app[fieldName].contentType.startsWith("image/") ||
+      app[fieldName].contentType === "application/pdf"
+        ? "inline"
+        : "attachment";
+    res.setHeader(
+      "Content-Disposition",
+      `${dispositionType}; filename=\"${app[fieldName].fileName}\"`
+    );
+    res.send(fileBuffer);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
+
 // Health check endpoint
 router.get("/health", (req, res) => {
   res.json({ status: "ok", message: "Backend is running" });

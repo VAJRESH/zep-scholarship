@@ -139,49 +139,49 @@ const UserHistory = () => {
             {app.birthCertificate && (
               <DocumentCard
                 title="Birth Certificate"
-                url={app.birthCertificate}
+                url={`/api/applications/${app._id}/file/birthCertificate`}
                 color="blue"
               />
             )}
             {app.leavingCertificate && (
               <DocumentCard
                 title="Leaving Certificate"
-                url={app.leavingCertificate}
+                url={`/api/applications/${app._id}/file/leavingCertificate`}
                 color="green"
               />
             )}
             {app.marksheet && (
               <DocumentCard
                 title="Marksheet"
-                url={app.marksheet}
+                url={`/api/applications/${app._id}/file/marksheet`}
                 color="purple"
               />
             )}
             {app.admissionProof && (
               <DocumentCard
                 title="Admission Proof"
-                url={app.admissionProof}
+                url={`/api/applications/${app._id}/file/admissionProof`}
                 color="orange"
               />
             )}
             {app.incomeProof && (
               <DocumentCard
                 title="Income Proof"
-                url={app.incomeProof}
+                url={`/api/applications/${app._id}/file/incomeProof`}
                 color="pink"
               />
             )}
             {app.bankAccount && (
               <DocumentCard
                 title="Bank Account Details"
-                url={app.bankAccount}
+                url={`/api/applications/${app._id}/file/bankAccount`}
                 color="indigo"
               />
             )}
             {app.rationCard && (
               <DocumentCard
                 title="Ration Card"
-                url={app.rationCard}
+                url={`/api/applications/${app._id}/file/rationCard`}
                 color="teal"
               />
             )}
@@ -235,7 +235,10 @@ const UserHistory = () => {
             </p>
             <button
               onClick={() =>
-                setViewingDocument({ url: app.idCard, title: "ID Card" })
+                handlePreviewDocument(
+                  `/api/applications/${app._id}/file/idCard`,
+                  "ID Card"
+                )
               }
               className="inline-flex items-center text-primary hover:text-primary-dark"
             >
@@ -314,6 +317,33 @@ const UserHistory = () => {
     }
   };
 
+  // Add handlePreviewDocument for secure preview
+  const handlePreviewDocument = async (url, title) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(url, {
+        headers: { "x-auth-token": token },
+        responseType: "blob",
+      });
+      const contentType = response.headers["content-type"];
+      // Try to extract filename from Content-Disposition header
+      let fileName = title;
+      const disposition = response.headers["content-disposition"];
+      if (disposition) {
+        const match = disposition.match(/filename="?([^";]+)"?/);
+        if (match) fileName = match[1];
+      }
+      setViewingDocument({
+        blob: response.data,
+        contentType,
+        fileName,
+        title: fileName,
+      });
+    } catch (err) {
+      alert("Failed to preview document.");
+    }
+  };
+
   const DocumentCard = ({ title, url, color }) => {
     const colors = {
       blue: {
@@ -364,7 +394,7 @@ const UserHistory = () => {
 
     return (
       <button
-        onClick={() => setViewingDocument({ url, title })}
+        onClick={() => handlePreviewDocument(url, title)}
         className="group p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 flex flex-col text-left w-full"
       >
         <div className="flex items-center mb-3">
@@ -648,6 +678,9 @@ const UserHistory = () => {
       {viewingDocument && (
         <DocumentViewer
           url={viewingDocument.url}
+          blob={viewingDocument.blob}
+          contentType={viewingDocument.contentType}
+          fileName={viewingDocument.fileName}
           title={viewingDocument.title}
           onClose={() => setViewingDocument(null)}
         />
