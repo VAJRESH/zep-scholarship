@@ -234,9 +234,7 @@ const UserHistory = () => {
               ID Card
             </p>
             <button
-              onClick={() =>
-                setViewingDocument({ url: app.idCard, title: "ID Card" })
-              }
+              onClick={() => handleViewTravelIdCard(app)}
               className="inline-flex items-center text-primary hover:text-primary-dark"
             >
               <svg
@@ -424,6 +422,25 @@ const UserHistory = () => {
         </div>
       </button>
     );
+  };
+
+  // Helper to fetch and preview travel expenses ID card
+  const handleViewTravelIdCard = async (app) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`/api/applications/travel-expenses/${app._id}/file/idCard`, {
+        headers: { "x-auth-token": token },
+        responseType: "arraybuffer",
+      });
+      setViewingDocument({
+        blob: res.data,
+        contentType: res.headers["content-type"],
+        fileName: app.idCard && app.idCard.fileName ? app.idCard.fileName : "ID Card",
+        title: "ID Card",
+      });
+    } catch (err) {
+      alert("Failed to load ID Card");
+    }
   };
 
   if (loading) {
@@ -647,7 +664,9 @@ const UserHistory = () => {
 
       {viewingDocument && (
         <DocumentViewer
-          url={viewingDocument.url}
+          blob={viewingDocument.blob}
+          contentType={viewingDocument.contentType}
+          fileName={viewingDocument.fileName}
           title={viewingDocument.title}
           onClose={() => setViewingDocument(null)}
         />

@@ -221,6 +221,66 @@ const UserDetail = () => {
     }
   };
 
+  // Helper to fetch and preview travel expenses ID card (admin)
+  const handleViewTravelIdCard = async (app) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        `/api/admin/travel-expenses/${app._id}/file/idCard`,
+        {
+          headers: { "x-auth-token": token },
+          responseType: "arraybuffer",
+        }
+      );
+      // Try to extract filename from Content-Disposition header
+      let fileName = "ID Card";
+      const disposition = res.headers["content-disposition"];
+      if (disposition) {
+        const match = disposition.match(/filename="?([^";]+)"?/);
+        if (match) fileName = match[1];
+      }
+      setViewingDocument({
+        blob: res.data,
+        contentType: res.headers["content-type"],
+        fileName,
+        title: fileName,
+      });
+    } catch (err) {
+      alert("Failed to load ID Card");
+    }
+  };
+
+  const handleDownloadTravelIdCard = async (app) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        `/api/admin/travel-expenses/${app._id}/file/idCard`,
+        {
+          headers: { "x-auth-token": token },
+          responseType: "arraybuffer",
+        }
+      );
+      let fileName = "id_card.pdf";
+      const disposition = res.headers["content-disposition"];
+      if (disposition) {
+        const match = disposition.match(/filename="?([^";]+)"?/);
+        if (match) fileName = match[1];
+      }
+      const url = window.URL.createObjectURL(
+        new Blob([res.data], { type: res.headers["content-type"] })
+      );
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Failed to download ID Card");
+    }
+  };
+
   const DocumentCard = ({ title, url, color, onClick }) => {
     const colors = {
       blue: {
@@ -565,12 +625,7 @@ const UserDetail = () => {
                 </p>
                 <div className="flex space-x-2">
                   <button
-                    onClick={() =>
-                      setViewingDocument({
-                        url: BASE_URL + app.idCard,
-                        title: "ID Card",
-                      })
-                    }
+                    onClick={() => handleViewTravelIdCard(app)}
                     className="inline-flex items-center text-primary hover:text-primary-dark"
                   >
                     <svg
@@ -596,7 +651,7 @@ const UserDetail = () => {
                     Preview
                   </button>
                   <button
-                    onClick={() => handleDownload(app.idCard, "id_card.pdf")}
+                    onClick={() => handleDownloadTravelIdCard(app)}
                     className="inline-flex items-center text-primary hover:text-primary-dark"
                   >
                     <svg
@@ -1370,7 +1425,6 @@ const UserDetail = () => {
       )}
       {viewingDocument && (
         <DocumentViewer
-          url={viewingDocument.url}
           blob={viewingDocument.blob}
           contentType={viewingDocument.contentType}
           fileName={viewingDocument.fileName}

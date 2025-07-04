@@ -102,12 +102,16 @@ router.post(
         });
       }
 
-      let idCardPath = "";
+      let idCardBlob = null;
 
-      // Process uploaded ID card
+      // Process uploaded ID card as blob
       if (req.files && req.files.idCard) {
         const file = req.files.idCard[0];
-        idCardPath = `/uploads/${req.user.id}/${file.filename}`;
+        idCardBlob = {
+          data: file.buffer,
+          contentType: file.mimetype,
+          fileName: file.originalname,
+        };
       }
 
       const newApplication = new TravelExpensesApplication({
@@ -118,7 +122,7 @@ router.post(
         distance: req.body.distance,
         travelMode: req.body.travelMode,
         aidRequired: req.body.aidRequired,
-        idCard: idCardPath,
+        idCard: idCardBlob,
       });
 
       await newApplication.save();
@@ -208,6 +212,28 @@ router.get("/my-applications", auth, async (req, res) => {
     res.json(allApplications);
   } catch (err) {
     console.error("Error fetching user applications:", err);
+    res.status(500).send("Server error");
+  }
+});
+
+// Serve Travel Expenses ID Card by application ID
+router.get("/travel-expenses/:id/file/idCard", auth, async (req, res) => {
+  try {
+    const app = await TravelExpensesApplication.findById(req.params.id);
+    if (!app || !app.idCard || !app.idCard.data) {
+      return res.status(404).send("ID Card not found");
+    }
+    res.set(
+      "Content-Type",
+      app.idCard.contentType || "application/octet-stream"
+    );
+    res.set(
+      "Content-Disposition",
+      `inline; filename=\"${app.idCard.fileName || "idCard"}\"`
+    );
+    res.send(app.idCard.data);
+  } catch (err) {
+    console.error(err);
     res.status(500).send("Server error");
   }
 });
