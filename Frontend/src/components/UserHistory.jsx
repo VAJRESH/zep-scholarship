@@ -477,6 +477,25 @@ const UserHistory = () => {
     );
   };
 
+  // Helper to fetch and preview travel expenses ID card
+  const handleViewTravelIdCard = async (app) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`/api/applications/travel-expenses/${app._id}/file/idCard`, {
+        headers: { "x-auth-token": token },
+        responseType: "arraybuffer",
+      });
+      setViewingDocument({
+        blob: res.data,
+        contentType: res.headers["content-type"],
+        fileName: app.idCard && app.idCard.fileName ? app.idCard.fileName : "ID Card",
+        title: "ID Card",
+      });
+    } catch (err) {
+      alert("Failed to load ID Card");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">

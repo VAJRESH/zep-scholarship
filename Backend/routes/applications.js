@@ -102,12 +102,16 @@ router.post(
         });
       }
 
-      let idCardPath = "";
+      let idCardBlob = null;
 
-      // Process uploaded ID card
+      // Process uploaded ID card as blob
       if (req.files && req.files.idCard) {
         const file = req.files.idCard[0];
-        idCardPath = `/uploads/${req.user.id}/${file.filename}`;
+        idCardBlob = {
+          data: file.buffer,
+          contentType: file.mimetype,
+          fileName: file.originalname,
+        };
       }
 
       const newApplication = new TravelExpensesApplication({
@@ -118,7 +122,7 @@ router.post(
         distance: req.body.distance,
         travelMode: req.body.travelMode,
         aidRequired: req.body.aidRequired,
-        idCard: idCardPath,
+        idCard: idCardBlob,
       });
 
       await newApplication.save();
