@@ -52,6 +52,9 @@ router.get("/users/:id/applications", [auth, adminAuth], async (req, res) => {
     });
     const studyBooksApps = await StudyBooksApplication.find({ user: userId });
 
+    // Log study books applications count
+    console.log("Study Books Applications found:", studyBooksApps.length);
+
     // Combine all applications
     const allApplications = [
       ...schoolFeesApps,
@@ -112,6 +115,164 @@ router.post("/approve/study-books/:id", [auth, adminAuth], async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server error");
+  }
+});
+
+// Update Study Books Application with dropdown selections and generate ID
+router.post("/update/study-books/:id", [auth, adminAuth], async (req, res) => {
+  try {
+    console.log("Received update request for study books:", {
+      id: req.params.id,
+      body: req.body,
+    });
+
+    const { standard, stream, medium } = req.body;
+
+    // Validate required fields
+    if (!standard || !stream || !medium) {
+      return res.status(400).json({
+        msg: "All fields (standard, stream, medium) are required",
+      });
+    }
+
+    const app = await StudyBooksApplication.findById(req.params.id);
+
+    if (!app) {
+      return res.status(404).json({ msg: "Application not found" });
+    }
+
+    console.log("Found application:", app._id);
+
+    // Check if application already has a generatedId and setNumber
+    if (app.generatedId && app.setNumber) {
+      console.log(
+        "Application already has ID:",
+        app.generatedId,
+        "Set Number:",
+        app.setNumber
+      );
+      console.log(
+        "Cannot change existing ID. Only updating standard, stream, medium fields."
+      );
+
+      // Only update the dropdown fields, keep existing generatedId and setNumber
+      app.standard = standard;
+      app.stream = stream;
+      app.medium = medium;
+
+      await app.save();
+
+      console.log("Application updated (ID unchanged - already exists)");
+
+      return res.json({
+        success: true,
+        msg: "Application updated (ID unchanged - already exists)",
+        generatedId: app.generatedId,
+        setNumber: app.setNumber,
+      });
+    }
+
+    // Generate new ID only if one doesn't exist
+    console.log("Generating new ID for application without existing ID");
+
+    // Get the latest set number for this combination
+    console.log("Looking for existing applications with:", {
+      standard,
+      stream,
+      medium,
+    });
+
+    // First, check if there are any applications with this exact combination
+    const latestSet = await StudyBooksApplication.findOne({
+      standard,
+      stream,
+      medium,
+      setNumber: { $exists: true, $ne: null },
+    }).sort({ setNumber: -1 });
+
+    console.log(
+      "Latest set found for exact combination:",
+      latestSet
+        ? {
+            id: latestSet._id,
+            setNumber: latestSet.setNumber,
+            generatedId: latestSet.generatedId,
+          }
+        : "No previous set found"
+    );
+
+    let setNumber;
+
+    if (latestSet) {
+      // If we found an application with this exact combination, increment the set number
+      setNumber = latestSet.setNumber + 1;
+      console.log(
+        "Found existing combination, incrementing set number to:",
+        setNumber
+      );
+    } else {
+      // If no exact combination found, check if this is the first application with any combination
+      const totalWithSetNumbers = await StudyBooksApplication.countDocuments({
+        setNumber: { $exists: true, $ne: null },
+      });
+
+      if (totalWithSetNumbers === 0) {
+        // This is the very first application to get a set number
+        setNumber = 1;
+        console.log(
+          "This is the first application to get a set number, starting with 1"
+        );
+      } else {
+        // Find the highest set number across all combinations and increment
+        const highestSet = await StudyBooksApplication.findOne({
+          setNumber: { $exists: true, $ne: null },
+        }).sort({ setNumber: -1 });
+
+        setNumber = highestSet.setNumber + 1;
+        console.log(
+          "No exact combination found, using next available set number:",
+          setNumber
+        );
+      }
+    }
+
+    console.log("Calculated new set number:", setNumber);
+
+    // Generate abbreviations
+    const standardAbbr = standard ? standard.replace(/\D/g, "") : "";
+    const streamAbbr =
+      stream && stream.length > 0 ? stream.charAt(0).toUpperCase() : "";
+    const mediumAbbr =
+      medium && medium.length > 0 ? medium.charAt(0).toUpperCase() : "";
+
+    // Generate ID
+    const generatedId = `${standardAbbr}-${streamAbbr}-${mediumAbbr}-${setNumber}`;
+
+    console.log("Generated ID:", generatedId);
+
+    // Update the application with new ID
+    app.standard = standard;
+    app.stream = stream;
+    app.medium = medium;
+    app.generatedId = generatedId;
+    app.setNumber = setNumber;
+
+    await app.save();
+
+    console.log("Application updated successfully");
+
+    res.json({
+      success: true,
+      msg: "Study books application updated successfully.",
+      generatedId,
+      setNumber,
+    });
+  } catch (err) {
+    console.error("Error updating study books application:", err);
+    res.status(500).json({
+      msg: "Server error while updating study books application",
+      error: err.message,
+    });
   }
 });
 
@@ -256,7 +417,7 @@ router.get("/download/study-books/:id", [auth, adminAuth], async (req, res) => {
     const bookTableTop = doc.y;
     const bookFields = [
       ["Year of Study", app.yearOfStudy || "N/A"],
-      ["Field", app.field || "N/A"],
+      ["Field", app.field || app.courseName || "N/A"],
       ["Books Required", ""], // Books will be listed separately
     ];
 
@@ -300,7 +461,7 @@ router.get("/download/study-books/:id", [auth, adminAuth], async (req, res) => {
       if (match) {
         let name = match[1].trim();
         let type = match[2];
-        return `${name} - ${type}`;
+        return `${name} (${type})`;
       }
       return b.trim();
     });
@@ -329,6 +490,31 @@ router.get("/download/study-books/:id", [auth, adminAuth], async (req, res) => {
         });
       currentY += rowHeight;
     });
+
+    // Add generated ID if available
+    if (app.generatedId) {
+      if (currentY % 2 === 0) {
+        doc
+          .rect(35, currentY - 5, 520, rowHeight)
+          .fillOpacity(0.05)
+          .fill("#F5F5F5")
+          .fillOpacity(1);
+      }
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(10)
+        .fillColor("#333333")
+        .text("Generated ID", col1X, currentY, { width: labelWidth });
+      doc
+        .font("Helvetica")
+        .fontSize(10)
+        .fillColor("#333333")
+        .text(app.generatedId, col2X, currentY, {
+          width: valueWidth * 2,
+          align: "left",
+        });
+      currentY += rowHeight;
+    }
 
     // Draw book table border
     doc
