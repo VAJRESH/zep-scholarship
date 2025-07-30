@@ -13,6 +13,7 @@ const StudentRegistrationSchema = new mongoose.Schema({
   state: { type: String },
   caste: { type: String },
   gender: { type: String },
+  phone: { type: String },
   orphan: { type: Boolean },
   disabled: { type: Boolean },
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },

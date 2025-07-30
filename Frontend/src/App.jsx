@@ -10,6 +10,7 @@ import Registration from "./components/Registration";
 import Options from "./components/Options";
 import AdminDashboard from "./components/AdminDashboard";
 import UserDetail from "./components/UserDetail";
+import ViewRecords from "./components/ViewRecords";
 import SchoolFeesForm from "./components/SchoolFeesForm";
 import TravelExpensesForm from "./components/TravelExpensesForm";
 import StudyBooksForm from "./components/StudyBooksForm";
@@ -137,6 +138,14 @@ function App() {
               element={
                 <AdminRoute>
                   <UserDetail />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/view-records"
+              element={
+                <AdminRoute>
+                  <ViewRecords />
                 </AdminRoute>
               }
             />

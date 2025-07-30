@@ -180,6 +180,12 @@ const Navbar = () => {
                     >
                       Dashboard
                     </Link>
+                    <Link
+                      to="/admin/view-records"
+                      className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200"
+                    >
+                      View Records
+                    </Link>
                     <button
                       onClick={handleLogout}
                       className="px-3 py-2 rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 transition-all duration-200"
@@ -273,13 +279,22 @@ const Navbar = () => {
               ) : (
                 <>
                   {userRole === "admin" ? (
-                    <Link
-                      to="/admin"
-                      className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Dashboard
-                    </Link>
+                    <>
+                      <Link
+                        to="/admin"
+                        className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Dashboard
+                      </Link>
+                      <Link
+                        to="/admin/view-records"
+                        className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        View Records
+                      </Link>
+                    </>
                   ) : (
                     <>
                       <Link

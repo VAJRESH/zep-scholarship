@@ -4,7 +4,7 @@ import { useEffect } from "react";
 export default function SessionManager() {
   const location = useLocation();
   useEffect(() => {
-    if (location.pathname === "/login" || location.pathname==="/register") {
+    if (location.pathname === "/login" || location.pathname === "/register") {
       localStorage.removeItem("token");
       localStorage.removeItem("userRole");
     }

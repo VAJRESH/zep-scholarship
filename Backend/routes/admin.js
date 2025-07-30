@@ -317,56 +317,10 @@ router.post("/assign-book-numbers/:id", [auth, adminAuth], async (req, res) => {
       });
     }
 
-    // Check for duplicate book numbers
-    const uniqueNumbers = new Set(bookNumbers);
-    if (uniqueNumbers.size !== bookNumbers.length) {
-      return res.status(400).json({
-        msg: "Book numbers must be unique",
-      });
-    }
-
     // Check for negative or zero numbers
     if (bookNumbers.some((num) => num <= 0)) {
       return res.status(400).json({
         msg: "Book numbers must be positive integers",
-      });
-    }
-
-    // Get the highest book number across all applications to ensure uniqueness
-    const allApplications = await StudyBooksApplication.find({
-      bookNumbers: { $exists: true, $ne: null },
-    });
-
-    let maxBookNumber = 0;
-    allApplications.forEach((application) => {
-      if (application.bookNumbers) {
-        const appMaxNumber = Math.max(
-          ...Array.from(application.bookNumbers.values())
-        );
-        if (appMaxNumber > maxBookNumber) {
-          maxBookNumber = appMaxNumber;
-        }
-      }
-    });
-
-    // Check if any of the provided numbers conflict with existing numbers
-    const existingNumbers = new Set();
-    allApplications.forEach((application) => {
-      if (application.bookNumbers) {
-        application.bookNumbers.forEach((number, book) => {
-          existingNumbers.add(number);
-        });
-      }
-    });
-
-    const conflictingNumbers = bookNumbers.filter((num) =>
-      existingNumbers.has(num)
-    );
-    if (conflictingNumbers.length > 0) {
-      return res.status(400).json({
-        msg: `Book numbers ${conflictingNumbers.join(
-          ", "
-        )} are already assigned to other books`,
       });
     }
 
@@ -391,55 +345,6 @@ router.post("/assign-book-numbers/:id", [auth, adminAuth], async (req, res) => {
     console.error("Error assigning book numbers:", err);
     res.status(500).json({
       msg: "Server error while assigning book numbers",
-      error: err.message,
-    });
-  }
-});
-
-// Get next available book numbers for study books application
-router.get("/next-book-numbers/:id", [auth, adminAuth], async (req, res) => {
-  try {
-    const app = await StudyBooksApplication.findById(req.params.id);
-
-    if (!app) {
-      return res.status(404).json({ msg: "Application not found" });
-    }
-
-    // Parse books from booksRequired field
-    const books = app.booksRequired.split(",").map((book) => book.trim());
-
-    // Get the highest book number across all applications
-    const allApplications = await StudyBooksApplication.find({
-      bookNumbers: { $exists: true, $ne: null },
-    });
-
-    let maxBookNumber = 0;
-    allApplications.forEach((application) => {
-      if (application.bookNumbers) {
-        const appMaxNumber = Math.max(
-          ...Array.from(application.bookNumbers.values())
-        );
-        if (appMaxNumber > maxBookNumber) {
-          maxBookNumber = appMaxNumber;
-        }
-      }
-    });
-
-    // Generate next available numbers
-    const nextNumbers = [];
-    for (let i = 0; i < books.length; i++) {
-      nextNumbers.push(maxBookNumber + i + 1);
-    }
-
-    res.json({
-      success: true,
-      nextNumbers,
-      books,
-    });
-  } catch (err) {
-    console.error("Error getting next book numbers:", err);
-    res.status(500).json({
-      msg: "Server error while getting next book numbers",
       error: err.message,
     });
   }
@@ -1336,6 +1241,132 @@ router.get(
     } catch (err) {
       console.error(err.message);
       res.status(500).send("Server error");
+    }
+  }
+);
+
+// GET /api/admin/view-records/:id
+// Get records by ID (generatedId or application ID)
+router.get("/view-records/:id", [auth, adminAuth], async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // First try to find by generatedId
+    let application = await StudyBooksApplication.findOne({ generatedId: id });
+
+    // If not found by generatedId, try to find by application ID
+    if (!application) {
+      application = await StudyBooksApplication.findById(id);
+    }
+
+    if (!application) {
+      return res.status(404).json({ msg: "Record not found" });
+    }
+
+    // Get user details
+    const user = await User.findById(application.user).select("-password");
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    // Get student registration details
+    const studentRegistration = await StudentRegistration.findOne({
+      user: application.user,
+    });
+
+    // Convert bookNumbers Map to object
+    const appObj = application.toObject();
+    if (appObj.bookNumbers) {
+      appObj.bookNumbers = Object.fromEntries(appObj.bookNumbers);
+    }
+
+    res.json({
+      success: true,
+      application: appObj,
+      user,
+      studentRegistration,
+    });
+  } catch (err) {
+    console.error("Error fetching records:", err);
+    res.status(500).json({ msg: "Server error while fetching records" });
+  }
+});
+
+// GET /api/admin/search-by-book-number/:bookNumber
+// Search for applications by book number
+router.get(
+  "/search-by-book-number/:bookNumber",
+  [auth, adminAuth],
+  async (req, res) => {
+    try {
+      const { bookNumber } = req.params;
+      const bookNumberInt = parseInt(bookNumber);
+
+      if (isNaN(bookNumberInt)) {
+        return res.status(400).json({ msg: "Invalid book number" });
+      }
+
+      console.log(`Searching for book number: ${bookNumberInt}`);
+
+      // Find all applications that have book numbers assigned
+      const applications = await StudyBooksApplication.find({
+        bookNumbers: { $exists: true, $ne: null },
+      }).populate("user");
+
+      console.log(
+        `Found ${applications.length} applications with book numbers`
+      );
+
+      const matchingApplications = [];
+
+      for (const app of applications) {
+        console.log(`Checking application ${app._id}:`, {
+          hasBookNumbers: !!app.bookNumbers,
+          bookNumbersSize: app.bookNumbers ? app.bookNumbers.size : 0,
+          bookNumbersKeys: app.bookNumbers
+            ? Array.from(app.bookNumbers.keys())
+            : [],
+          bookNumbersValues: app.bookNumbers
+            ? Array.from(app.bookNumbers.values())
+            : [],
+        });
+
+        if (app.bookNumbers && app.bookNumbers.has(bookNumberInt)) {
+          console.log(
+            `Found matching book number ${bookNumberInt} in application ${app._id}`
+          );
+
+          // Get student registration details
+          const studentRegistration = await StudentRegistration.findOne({
+            user: app.user._id,
+          });
+
+          // Convert bookNumbers Map to object
+          const appObj = app.toObject();
+          if (appObj.bookNumbers) {
+            appObj.bookNumbers = Object.fromEntries(appObj.bookNumbers);
+          }
+
+          matchingApplications.push({
+            application: appObj,
+            user: app.user,
+            studentRegistration,
+          });
+        }
+      }
+
+      console.log(`Found ${matchingApplications.length} matching applications`);
+
+      res.json({
+        success: true,
+        bookNumber: bookNumberInt,
+        applications: matchingApplications,
+      });
+    } catch (err) {
+      console.error("Error searching by book number:", err);
+      res
+        .status(500)
+        .json({ msg: "Server error while searching by book number" });
     }
   }
 );

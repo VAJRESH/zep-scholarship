@@ -322,29 +322,6 @@ const UserDetail = () => {
     }
   };
 
-  const handleGetNextBookNumbers = async (appId) => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
-        `/api/admin/next-book-numbers/${appId}`,
-        {
-          headers: { "x-auth-token": token },
-        }
-      );
-
-      if (response.data.success) {
-        return response.data.nextNumbers;
-      }
-    } catch (err) {
-      console.error("Error getting next book numbers:", err);
-      setError(
-        err.response?.data?.msg ||
-          "Failed to get next book numbers. Please try again."
-      );
-    }
-    return null;
-  };
-
   const handlePreviewDocument = async (url, title) => {
     try {
       const token = localStorage.getItem("token");
@@ -1003,24 +980,19 @@ const UserDetail = () => {
                   <Button
                     variant="secondary"
                     size="small"
-                    onClick={async () => {
-                      const nextNumbers = await handleGetNextBookNumbers(
-                        app._id
-                      );
-                      if (nextNumbers) {
-                        const books = app.booksRequired
-                          .split(",")
-                          .map((book) => book.trim());
-                        const bookNumbersInput = books.map((book, index) => ({
-                          book,
-                          number: nextNumbers[index],
-                        }));
-                        setBookNumberingData({
-                          appId: app._id,
-                          books: bookNumbersInput,
-                        });
-                        setShowBookNumbering(true);
-                      }
+                    onClick={() => {
+                      const books = app.booksRequired
+                        .split(",")
+                        .map((book) => book.trim());
+                      const bookNumbersInput = books.map((book, index) => ({
+                        book,
+                        number: 1, // Start with 1 for manual entry
+                      }));
+                      setBookNumberingData({
+                        appId: app._id,
+                        books: bookNumbersInput,
+                      });
+                      setShowBookNumbering(true);
                     }}
                     disabled={app.status === "approved"}
                   >
@@ -1876,8 +1848,8 @@ const UserDetail = () => {
 
             <div className="space-y-4">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Assign unique numbers to each book. Numbers must be unique
-                across all applications.
+                Assign numbers to each book. You can assign the same number to
+                multiple students if needed.
               </p>
 
               <div className="space-y-3">
