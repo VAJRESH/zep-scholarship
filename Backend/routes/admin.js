@@ -55,11 +55,20 @@ router.get("/users/:id/applications", [auth, adminAuth], async (req, res) => {
     // Log study books applications count
     console.log("Study Books Applications found:", studyBooksApps.length);
 
+    // Convert bookNumbers Map to object for study books applications
+    const processedStudyBooksApps = studyBooksApps.map((app) => {
+      const appObj = app.toObject();
+      if (appObj.bookNumbers) {
+        appObj.bookNumbers = Object.fromEntries(appObj.bookNumbers);
+      }
+      return appObj;
+    });
+
     // Combine all applications
     const allApplications = [
       ...schoolFeesApps,
       ...travelExpensesApps,
-      ...studyBooksApps,
+      ...processedStudyBooksApps,
     ];
 
     // Sort by creation date (newest first)
@@ -276,6 +285,166 @@ router.post("/update/study-books/:id", [auth, adminAuth], async (req, res) => {
   }
 });
 
+// Assign book numbers to study books application
+router.post("/assign-book-numbers/:id", [auth, adminAuth], async (req, res) => {
+  try {
+    console.log("Received book numbering request for study books:", {
+      id: req.params.id,
+      body: req.body,
+    });
+
+    const { bookNumbers } = req.body;
+
+    if (!bookNumbers || !Array.isArray(bookNumbers)) {
+      return res.status(400).json({
+        msg: "Book numbers array is required",
+      });
+    }
+
+    const app = await StudyBooksApplication.findById(req.params.id);
+
+    if (!app) {
+      return res.status(404).json({ msg: "Application not found" });
+    }
+
+    // Parse books from booksRequired field
+    const books = app.booksRequired.split(",").map((book) => book.trim());
+
+    // Validate that bookNumbers array length matches books array length
+    if (bookNumbers.length !== books.length) {
+      return res.status(400).json({
+        msg: `Number of book numbers (${bookNumbers.length}) must match number of books (${books.length})`,
+      });
+    }
+
+    // Check for duplicate book numbers
+    const uniqueNumbers = new Set(bookNumbers);
+    if (uniqueNumbers.size !== bookNumbers.length) {
+      return res.status(400).json({
+        msg: "Book numbers must be unique",
+      });
+    }
+
+    // Check for negative or zero numbers
+    if (bookNumbers.some((num) => num <= 0)) {
+      return res.status(400).json({
+        msg: "Book numbers must be positive integers",
+      });
+    }
+
+    // Get the highest book number across all applications to ensure uniqueness
+    const allApplications = await StudyBooksApplication.find({
+      bookNumbers: { $exists: true, $ne: null },
+    });
+
+    let maxBookNumber = 0;
+    allApplications.forEach((application) => {
+      if (application.bookNumbers) {
+        const appMaxNumber = Math.max(
+          ...Array.from(application.bookNumbers.values())
+        );
+        if (appMaxNumber > maxBookNumber) {
+          maxBookNumber = appMaxNumber;
+        }
+      }
+    });
+
+    // Check if any of the provided numbers conflict with existing numbers
+    const existingNumbers = new Set();
+    allApplications.forEach((application) => {
+      if (application.bookNumbers) {
+        application.bookNumbers.forEach((number, book) => {
+          existingNumbers.add(number);
+        });
+      }
+    });
+
+    const conflictingNumbers = bookNumbers.filter((num) =>
+      existingNumbers.has(num)
+    );
+    if (conflictingNumbers.length > 0) {
+      return res.status(400).json({
+        msg: `Book numbers ${conflictingNumbers.join(
+          ", "
+        )} are already assigned to other books`,
+      });
+    }
+
+    // Create book numbers map
+    const bookNumbersMap = new Map();
+    books.forEach((book, index) => {
+      bookNumbersMap.set(book, bookNumbers[index]);
+    });
+
+    // Update the application with book numbers
+    app.bookNumbers = bookNumbersMap;
+    await app.save();
+
+    console.log("Book numbers assigned successfully");
+
+    res.json({
+      success: true,
+      msg: "Book numbers assigned successfully.",
+      bookNumbers: Object.fromEntries(bookNumbersMap),
+    });
+  } catch (err) {
+    console.error("Error assigning book numbers:", err);
+    res.status(500).json({
+      msg: "Server error while assigning book numbers",
+      error: err.message,
+    });
+  }
+});
+
+// Get next available book numbers for study books application
+router.get("/next-book-numbers/:id", [auth, adminAuth], async (req, res) => {
+  try {
+    const app = await StudyBooksApplication.findById(req.params.id);
+
+    if (!app) {
+      return res.status(404).json({ msg: "Application not found" });
+    }
+
+    // Parse books from booksRequired field
+    const books = app.booksRequired.split(",").map((book) => book.trim());
+
+    // Get the highest book number across all applications
+    const allApplications = await StudyBooksApplication.find({
+      bookNumbers: { $exists: true, $ne: null },
+    });
+
+    let maxBookNumber = 0;
+    allApplications.forEach((application) => {
+      if (application.bookNumbers) {
+        const appMaxNumber = Math.max(
+          ...Array.from(application.bookNumbers.values())
+        );
+        if (appMaxNumber > maxBookNumber) {
+          maxBookNumber = appMaxNumber;
+        }
+      }
+    });
+
+    // Generate next available numbers
+    const nextNumbers = [];
+    for (let i = 0; i < books.length; i++) {
+      nextNumbers.push(maxBookNumber + i + 1);
+    }
+
+    res.json({
+      success: true,
+      nextNumbers,
+      books,
+    });
+  } catch (err) {
+    console.error("Error getting next book numbers:", err);
+    res.status(500).json({
+      msg: "Server error while getting next book numbers",
+      error: err.message,
+    });
+  }
+});
+
 // Download Study Books Application as PDF
 router.get("/download/study-books/:id", [auth, adminAuth], async (req, res) => {
   try {
@@ -480,11 +649,18 @@ router.get("/download/study-books/:id", [auth, adminAuth], async (req, res) => {
           .fill("#F5F5F5")
           .fillOpacity(1);
       }
+
+      // Get book number if assigned
+      const bookNumber =
+        app.bookNumbers && app.bookNumbers.get(book)
+          ? app.bookNumbers.get(book)
+          : index + 1;
+
       doc
         .font("Helvetica")
         .fontSize(10)
         .fillColor("#333333") // Ensure book items are visible
-        .text(`${index + 1}. ${book}`, col2X, currentY, {
+        .text(`#${bookNumber}. ${book}`, col2X, currentY, {
           width: valueWidth * 2,
           align: "left",
         });

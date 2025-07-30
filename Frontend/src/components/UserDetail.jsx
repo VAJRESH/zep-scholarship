@@ -16,6 +16,8 @@ const UserDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [viewingDocument, setViewingDocument] = useState(null);
+  const [showBookNumbering, setShowBookNumbering] = useState(false);
+  const [bookNumberingData, setBookNumberingData] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -282,6 +284,65 @@ const UserDetail = () => {
         );
       }
     }
+  };
+
+  const handleAssignBookNumbers = async (appId, bookNumbers) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `/api/admin/assign-book-numbers/${appId}`,
+        { bookNumbers },
+        {
+          headers: { "x-auth-token": token },
+        }
+      );
+
+      if (response.data.success) {
+        // Update the application in the local state
+        setApplications((prevApps) =>
+          prevApps.map((app) =>
+            app._id === appId
+              ? {
+                  ...app,
+                  bookNumbers: response.data.bookNumbers,
+                }
+              : app
+          )
+        );
+
+        setError(""); // Clear any existing errors
+        alert("Book numbers assigned successfully!");
+      }
+    } catch (err) {
+      console.error("Error assigning book numbers:", err);
+      setError(
+        err.response?.data?.msg ||
+          "Failed to assign book numbers. Please try again."
+      );
+    }
+  };
+
+  const handleGetNextBookNumbers = async (appId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `/api/admin/next-book-numbers/${appId}`,
+        {
+          headers: { "x-auth-token": token },
+        }
+      );
+
+      if (response.data.success) {
+        return response.data.nextNumbers;
+      }
+    } catch (err) {
+      console.error("Error getting next book numbers:", err);
+      setError(
+        err.response?.data?.msg ||
+          "Failed to get next book numbers. Please try again."
+      );
+    }
+    return null;
   };
 
   const handlePreviewDocument = async (url, title) => {
@@ -934,15 +995,70 @@ const UserDetail = () => {
             </div>
 
             <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <p className="mb-2 font-medium text-gray-700 dark:text-gray-300">
-                Books Required
-              </p>
+              <div className="flex items-center justify-between mb-4">
+                <p className="font-medium text-gray-700 dark:text-gray-300">
+                  Books Required
+                </p>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="secondary"
+                    size="small"
+                    onClick={async () => {
+                      const nextNumbers = await handleGetNextBookNumbers(
+                        app._id
+                      );
+                      if (nextNumbers) {
+                        const books = app.booksRequired
+                          .split(",")
+                          .map((book) => book.trim());
+                        const bookNumbersInput = books.map((book, index) => ({
+                          book,
+                          number: nextNumbers[index],
+                        }));
+                        setBookNumberingData({
+                          appId: app._id,
+                          books: bookNumbersInput,
+                        });
+                        setShowBookNumbering(true);
+                      }
+                    }}
+                    disabled={app.status === "approved"}
+                  >
+                    Assign Book Numbers
+                  </Button>
+                  {app.status === "approved" && (
+                    <div className="relative group">
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200 text-sm rounded-lg shadow-lg border border-red-200 dark:border-red-800 whitespace-nowrap z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        Cannot assign book numbers - Application approved
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-red-100 dark:border-t-red-900/20"></div>
+                      </div>
+                      <div className="w-4 h-4 text-red-500 dark:text-red-400 cursor-help">
+                        <svg fill="currentColor" viewBox="0 0 20 20">
+                          <path
+                            fillRule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
               <div className="space-y-2">
                 {app.booksRequired.split(",").map((book, index) => {
                   const trimmedBook = book.trim();
                   const match = trimmedBook.match(
                     /(.+?)\s*\((Textbook|Guide)\)/i
                   );
+
+                  // Get assigned book number if available
+                  const assignedNumber =
+                    app.bookNumbers && app.bookNumbers[trimmedBook]
+                      ? app.bookNumbers[trimmedBook]
+                      : null;
+                  const displayNumber = assignedNumber || index + 1;
+
                   if (match) {
                     const name = match[1].trim();
                     const type = match[2];
@@ -960,8 +1076,14 @@ const UserDetail = () => {
                               ({type})
                             </span>
                           </div>
-                          <span className="text-sm text-gray-400 dark:text-gray-500">
-                            #{index + 1}
+                          <span
+                            className={`text-sm font-medium ${
+                              assignedNumber
+                                ? "text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/20 px-2 py-1 rounded"
+                                : "text-gray-400 dark:text-gray-500"
+                            }`}
+                          >
+                            #{displayNumber}
                           </span>
                         </div>
                       </div>
@@ -976,8 +1098,14 @@ const UserDetail = () => {
                         <span className="font-medium text-gray-900 dark:text-white">
                           {trimmedBook}
                         </span>
-                        <span className="text-sm text-gray-400 dark:text-gray-500">
-                          #{index + 1}
+                        <span
+                          className={`text-sm font-medium ${
+                            assignedNumber
+                              ? "text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/20 px-2 py-1 rounded"
+                              : "text-gray-400 dark:text-gray-500"
+                          }`}
+                        >
+                          #{displayNumber}
                         </span>
                       </div>
                     </div>
@@ -1713,6 +1841,109 @@ const UserDetail = () => {
           title={viewingDocument.title}
           onClose={() => setViewingDocument(null)}
         />
+      )}
+
+      {/* Book Numbering Modal */}
+      {showBookNumbering && bookNumberingData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Assign Book Numbers
+              </h3>
+              <button
+                onClick={() => {
+                  setShowBookNumbering(false);
+                  setBookNumberingData(null);
+                }}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Assign unique numbers to each book. Numbers must be unique
+                across all applications.
+              </p>
+
+              <div className="space-y-3">
+                {bookNumberingData.books.map((bookData, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded"
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900 dark:text-white text-sm">
+                        {bookData.book}
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <label className="text-sm text-gray-600 dark:text-gray-400">
+                        Book #:
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={bookData.number}
+                        onChange={(e) => {
+                          const newBooks = [...bookNumberingData.books];
+                          newBooks[index].number =
+                            parseInt(e.target.value) || 1;
+                          setBookNumberingData({
+                            ...bookNumberingData,
+                            books: newBooks,
+                          });
+                        }}
+                        className="w-20 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-4">
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setShowBookNumbering(false);
+                    setBookNumberingData(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={async () => {
+                    const bookNumbers = bookNumberingData.books.map(
+                      (book) => book.number
+                    );
+                    await handleAssignBookNumbers(
+                      bookNumberingData.appId,
+                      bookNumbers
+                    );
+                    setShowBookNumbering(false);
+                    setBookNumberingData(null);
+                  }}
+                >
+                  Assign Numbers
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

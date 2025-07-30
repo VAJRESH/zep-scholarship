@@ -43,6 +43,12 @@ const StudyBooksApplicationSchema = new mongoose.Schema({
     type: Number,
     required: false,
   },
+  // New field to store book numbers
+  bookNumbers: {
+    type: Map,
+    of: Number,
+    default: new Map(),
+  },
   status: {
     type: String,
     default: "pending",
