@@ -24,6 +24,35 @@ const Registration = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  // Handle browser back button and page unload during registration
+  useEffect(() => {
+    const handleBackButton = (e) => {
+      e.preventDefault();
+      const token = localStorage.getItem("token");
+      if (token) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("userRole");
+        navigate("/", { replace: true });
+      }
+    };
+
+    // Handle browser back button
+    window.addEventListener("popstate", handleBackButton);
+
+    // Handle page unload (refresh, close tab, etc.)
+    window.addEventListener("beforeunload", () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("userRole");
+      }
+    });
+
+    return () => {
+      window.removeEventListener("popstate", handleBackButton);
+    };
+  }, [navigate]);
+
   // Check if user has already completed registration
   useEffect(() => {
     const checkRegistration = async () => {

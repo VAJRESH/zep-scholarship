@@ -38,6 +38,60 @@ router.get("/users/:id", [auth, adminAuth], async (req, res) => {
   }
 });
 
+// GET /api/admin/view-records/:id
+// Get specific application details by ID or generated ID
+router.get("/view-records/:id", [auth, adminAuth], async (req, res) => {
+  try {
+    const searchId = req.params.id;
+
+    // Try to find by application ID first
+    let application;
+
+    try {
+      // Only try findById if it looks like a valid MongoDB ID
+      if (searchId.match(/^[0-9a-fA-F]{24}$/)) {
+        application = await StudyBooksApplication.findById(searchId).populate(
+          "user"
+        );
+      }
+    } catch (error) {
+      console.log("Not a valid ObjectId, trying generatedId search");
+    }
+
+    // If not found, try to find by generated ID
+    if (!application) {
+      application = await StudyBooksApplication.findOne({
+        generatedId: searchId,
+      }).populate("user");
+    }
+
+    if (!application) {
+      return res.status(404).json({ msg: "Application not found" });
+    }
+
+    // Get the student registration details
+    const studentRegistration = await StudentRegistration.findOne({
+      user: application.user._id,
+    });
+
+    // Convert bookNumbers Map to object if it exists
+    const appObj = application.toObject();
+    if (appObj.bookNumbers) {
+      appObj.bookNumbers = Object.fromEntries(appObj.bookNumbers);
+    }
+
+    res.json({
+      success: true,
+      application: appObj,
+      user: application.user,
+      studentRegistration,
+    });
+  } catch (err) {
+    console.error("Error in view-records:", err.message);
+    res.status(500).json({ msg: "Server error while fetching records" });
+  }
+});
+
 // GET /api/admin/users/:id/applications
 // Get all applications from a specific user
 router.get("/users/:id/applications", [auth, adminAuth], async (req, res) => {
@@ -80,6 +134,88 @@ router.get("/users/:id/applications", [auth, adminAuth], async (req, res) => {
     res.status(500).send("Server error");
   }
 });
+
+// GET /api/admin/search-by-book-number/:number
+// Search for study book applications by book number
+router.get(
+  "/search-by-book-number/:number",
+  [auth, adminAuth],
+  async (req, res) => {
+    try {
+      // Get all study book applications that have the given book number
+      const bookNumber = parseInt(req.params.number);
+      if (isNaN(bookNumber)) {
+        return res.status(400).json({ msg: "Invalid book number" });
+      }
+
+      // Find all applications where bookNumbers field exists and is not empty
+      const applications = await StudyBooksApplication.find({
+        bookNumbers: { $exists: true },
+      }).populate("user");
+
+      // Filter applications that have the specified book number
+      const matchingApplications = applications.filter((app) => {
+        return Array.from(app.bookNumbers.values()).includes(bookNumber);
+      });
+
+      if (matchingApplications.length === 0) {
+        return res
+          .status(404)
+          .json({ msg: "No applications found with this book number" });
+      }
+
+      // Get student registrations for all matching users
+      const userIds = matchingApplications.map((app) => app.user._id);
+      const registrations = await StudentRegistration.find({
+        user: { $in: userIds },
+      });
+
+      // Create a map of user IDs to their registration details
+      const registrationMap = new Map(
+        registrations.map((reg) => [reg.user.toString(), reg])
+      );
+
+      // Combine the data
+      const results = matchingApplications.map((app) => {
+        const registration = registrationMap.get(app.user._id.toString());
+        const matchingBooks = Array.from(app.bookNumbers.entries())
+          .filter(([_, num]) => num === bookNumber)
+          .map(([book]) => book);
+
+        return {
+          applicationId: app._id,
+          generatedId: app.generatedId,
+          status: app.status,
+          studentDetails: registration
+            ? {
+                name: registration.applicantName,
+                collegeName: registration.collegeName,
+                courseName: registration.courseName,
+                address: registration.address,
+                contact: registration.contact,
+              }
+            : null,
+          matchingBooks,
+          bookSet: {
+            standard: app.standard,
+            stream: app.stream,
+            medium: app.medium,
+          },
+        };
+      });
+
+      res.json({
+        success: true,
+        results,
+      });
+    } catch (err) {
+      console.error("Error searching by book number:", err);
+      res
+        .status(500)
+        .json({ msg: "Server error while searching by book number" });
+    }
+  }
+);
 
 // Approve School Fees Application
 router.post("/approve/school-fees/:id", [auth, adminAuth], async (req, res) => {
@@ -152,22 +288,66 @@ router.post("/update/study-books/:id", [auth, adminAuth], async (req, res) => {
 
     console.log("Found application:", app._id);
 
-    // Check if application already has a generatedId and setNumber
-    if (app.generatedId && app.setNumber) {
-      console.log(
-        "Application already has ID:",
-        app.generatedId,
-        "Set Number:",
-        app.setNumber
-      );
-      console.log(
-        "Cannot change existing ID. Only updating standard, stream, medium fields."
-      );
+    // Check if application already has a setNumber (we want to keep this)
+    const existingSetNumber = app.setNumber;
 
-      // Only update the dropdown fields, keep existing generatedId and setNumber
-      app.standard = standard;
-      app.stream = stream;
-      app.medium = medium;
+    // Always update the dropdown fields
+    app.standard = standard;
+    app.stream = stream;
+    app.medium = medium;
+
+    // Keep the existing setNumber but regenerate the ID based on new dropdown values
+    if (existingSetNumber) {
+      console.log("Application has existing set number:", existingSetNumber);
+
+      // Generate new ID with the updated fields but keep the same set number
+      let streamAbbr = "";
+      if (stream) {
+        if (
+          stream.toLowerCase().includes("b.com") ||
+          stream.toLowerCase().includes("bcom")
+        ) {
+          streamAbbr = "BCOM";
+        } else if (
+          stream.toLowerCase().includes("bachelor of arts") ||
+          stream.toLowerCase().includes("ba")
+        ) {
+          streamAbbr = "BA";
+        } else {
+          streamAbbr = stream.charAt(0).toUpperCase();
+        }
+      }
+
+      // Handle year abbreviations for standardAbbr
+      let standardAbbr = "";
+      const yearLower = standard.toLowerCase();
+      if (yearLower.includes("1st year") || yearLower.includes("first year")) {
+        standardAbbr = "F.Y";
+      } else if (
+        yearLower.includes("2nd year") ||
+        yearLower.includes("second year")
+      ) {
+        standardAbbr = "S.Y";
+      } else if (
+        yearLower.includes("3rd year") ||
+        yearLower.includes("third year")
+      ) {
+        standardAbbr = "T.Y";
+      } else if (
+        yearLower.includes("4th year") ||
+        yearLower.includes("fourth year")
+      ) {
+        standardAbbr = "B.E";
+      } else {
+        standardAbbr = standard;
+      }
+
+      const mediumAbbr =
+        medium && medium.length > 0 ? medium.charAt(0).toUpperCase() : "";
+
+      // Generate new ID but keep existing set number
+      app.generatedId = `${standardAbbr}-${streamAbbr}-${mediumAbbr}-${existingSetNumber}`;
+      app.setNumber = existingSetNumber; // Keep the same set number
 
       await app.save();
 
@@ -248,9 +428,51 @@ router.post("/update/study-books/:id", [auth, adminAuth], async (req, res) => {
     console.log("Calculated new set number:", setNumber);
 
     // Generate abbreviations
-    const standardAbbr = standard ? standard.replace(/\D/g, "") : "";
-    const streamAbbr =
-      stream && stream.length > 0 ? stream.charAt(0).toUpperCase() : "";
+    // Handle year abbreviations
+    let standardAbbr = "";
+    if (standard) {
+      const yearLower = standard.toLowerCase();
+      if (yearLower.includes("1st year") || yearLower.includes("first year")) {
+        standardAbbr = "F.Y";
+      } else if (
+        yearLower.includes("2nd year") ||
+        yearLower.includes("second year")
+      ) {
+        standardAbbr = "S.Y";
+      } else if (
+        yearLower.includes("3rd year") ||
+        yearLower.includes("third year")
+      ) {
+        standardAbbr = "T.Y";
+      } else if (
+        yearLower.includes("4th year") ||
+        yearLower.includes("fourth year")
+      ) {
+        standardAbbr = "B.E";
+      } else {
+        // Keep the year string as is if it doesn't match any patterns
+        standardAbbr = standard;
+      }
+    }
+
+    // Handle stream abbreviations
+    let streamAbbr = "";
+    if (stream) {
+      if (
+        stream.toLowerCase().includes("b.com") ||
+        stream.toLowerCase().includes("bcom")
+      ) {
+        streamAbbr = "BCOM";
+      } else if (
+        stream.toLowerCase().includes("bachelor of arts") ||
+        stream.toLowerCase().includes("ba")
+      ) {
+        streamAbbr = "BA";
+      } else {
+        streamAbbr = stream.charAt(0).toUpperCase();
+      }
+    }
+
     const mediumAbbr =
       medium && medium.length > 0 ? medium.charAt(0).toUpperCase() : "";
 
