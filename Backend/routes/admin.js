@@ -31,7 +31,17 @@ router.get("/users/:id", [auth, adminAuth], async (req, res) => {
     if (!registration) {
       return res.status(404).json({ msg: "Registration not found" });
     }
-    res.json(registration);
+
+    // Format dates in registration
+    const formattedRegistration = registration.toObject();
+    if (formattedRegistration.date) {
+      formattedRegistration.date = formattedRegistration.date.toLocaleDateString('en-GB');
+    }
+    if (formattedRegistration.dob) {
+      formattedRegistration.dob = formattedRegistration.dob.toLocaleDateString('en-GB');
+    }
+
+    res.json(formattedRegistration);
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server error");
@@ -74,6 +84,18 @@ router.get("/view-records/:id", [auth, adminAuth], async (req, res) => {
       user: application.user._id,
     });
 
+    // Format dates in studentRegistration
+    let formattedStudentRegistration = null;
+    if (studentRegistration) {
+      formattedStudentRegistration = studentRegistration.toObject();
+      if (formattedStudentRegistration.date) {
+        formattedStudentRegistration.date = formattedStudentRegistration.date.toLocaleDateString('en-GB');
+      }
+      if (formattedStudentRegistration.dob) {
+        formattedStudentRegistration.dob = formattedStudentRegistration.dob.toLocaleDateString('en-GB');
+      }
+    }
+
     // Convert bookNumbers Map to object if it exists
     const appObj = application.toObject();
     if (appObj.bookNumbers) {
@@ -84,7 +106,7 @@ router.get("/view-records/:id", [auth, adminAuth], async (req, res) => {
       success: true,
       application: appObj,
       user: application.user,
-      studentRegistration,
+      studentRegistration: formattedStudentRegistration,
     });
   } catch (err) {
     console.error("Error in view-records:", err.message);
@@ -1496,6 +1518,18 @@ router.get("/view-records/:id", [auth, adminAuth], async (req, res) => {
       user: application.user,
     });
 
+    // Format dates in studentRegistration
+    let formattedStudentRegistration = null;
+    if (studentRegistration) {
+      formattedStudentRegistration = studentRegistration.toObject();
+      if (formattedStudentRegistration.date) {
+        formattedStudentRegistration.date = formattedStudentRegistration.date.toLocaleDateString('en-GB');
+      }
+      if (formattedStudentRegistration.dob) {
+        formattedStudentRegistration.dob = formattedStudentRegistration.dob.toLocaleDateString('en-GB');
+      }
+    }
+
     // Convert bookNumbers Map to object
     const appObj = application.toObject();
     if (appObj.bookNumbers) {
@@ -1506,7 +1540,7 @@ router.get("/view-records/:id", [auth, adminAuth], async (req, res) => {
       success: true,
       application: appObj,
       user,
-      studentRegistration,
+      studentRegistration: formattedStudentRegistration,
     });
   } catch (err) {
     console.error("Error fetching records:", err);
@@ -1563,6 +1597,18 @@ router.get(
             user: app.user._id,
           });
 
+          // Format dates in studentRegistration
+          let formattedStudentRegistration = null;
+          if (studentRegistration) {
+            formattedStudentRegistration = studentRegistration.toObject();
+            if (formattedStudentRegistration.date) {
+              formattedStudentRegistration.date = formattedStudentRegistration.date.toLocaleDateString('en-GB');
+            }
+            if (formattedStudentRegistration.dob) {
+              formattedStudentRegistration.dob = formattedStudentRegistration.dob.toLocaleDateString('en-GB');
+            }
+          }
+
           // Convert bookNumbers Map to object
           const appObj = app.toObject();
           if (appObj.bookNumbers) {
@@ -1572,7 +1618,7 @@ router.get(
           matchingApplications.push({
             application: appObj,
             user: app.user,
-            studentRegistration,
+            studentRegistration: formattedStudentRegistration,
           });
         }
       }

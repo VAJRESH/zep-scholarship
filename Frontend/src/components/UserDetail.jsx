@@ -20,6 +20,18 @@ const UserDetail = () => {
   const [bookNumberingData, setBookNumberingData] = useState(null);
   const navigate = useNavigate();
 
+  // Format date function
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "N/A";
+      return date.toLocaleDateString("en-GB"); // dd/mm/yyyy format
+    } catch {
+      return "N/A";
+    }
+  };
+
   useEffect(() => {
     async function fetchData() {
       try {
@@ -1305,15 +1317,7 @@ const UserDetail = () => {
                         Date of Birth
                       </div>
                       <div className="text-gray-900 dark:text-white">
-                        {registration.dob &&
-                          new Date(registration.dob).toLocaleDateString(
-                            "en-US",
-                            {
-                              day: "numeric",
-                              month: "long",
-                              year: "numeric",
-                            }
-                          )}
+                        {formatDate(registration.dob)}
                       </div>
                     </div>
 
@@ -1695,11 +1699,7 @@ const UserDetail = () => {
                           />
                         </svg>
                         Submitted:{" "}
-                        {new Date(app.createdAt).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
+                        {new Date(app.createdAt).toLocaleDateString("en-GB")}
                       </span>
                       <span className="hidden sm:inline">•</span>
                       <span className="flex items-center">

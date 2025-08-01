@@ -111,7 +111,7 @@ const AdminDashboard = () => {
           Admin Dashboard
         </h1>
         <div className="text-sm text-gray-500 dark:text-gray-400">
-          {new Date().toLocaleDateString()}
+          {new Date().toLocaleDateString("en-GB")}
         </div>
       </div>
 

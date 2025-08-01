@@ -24,6 +24,48 @@ const Registration = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  // Date formatting functions
+  const formatDateForDisplay = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
+    return date.toLocaleDateString("en-GB"); // dd/mm/yyyy format
+  };
+
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
+    return date.toISOString().split("T")[0]; // yyyy-mm-dd format for input
+  };
+
+  const formatDateForSubmission = (dateString) => {
+    if (!dateString) return "";
+    const [day, month, year] = dateString.split("/");
+    if (day && month && year) {
+      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    }
+    return dateString;
+  };
+
+  // Function to get current academic year
+  const getCurrentAcademicYear = () => {
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1; // January is 0
+
+    // Academic year typically runs from July/August to May/June
+    // If we're in the first half of the year (Jan-June), use previous year as start
+    // If we're in the second half (July-Dec), use current year as start
+    if (currentMonth >= 7) {
+      // July onwards - current year to next year
+      return `${currentYear}-${currentYear + 1}`;
+    } else {
+      // January to June - previous year to current year
+      return `${currentYear - 1}-${currentYear}`;
+    }
+  };
+
   // Handle browser back button and page unload during registration
   useEffect(() => {
     const handleBackButton = (e) => {
@@ -83,18 +125,60 @@ const Registration = () => {
     checkRegistration();
   }, [navigate]);
 
+  // Set academic year when component loads
+  useEffect(() => {
+    if (!loading) {
+      setData((prevData) => ({
+        ...prevData,
+        academicYear: getCurrentAcademicYear(),
+      }));
+    }
+  }, [loading]);
+
   const handleChange = (e) => {
     const value =
       e.target.type === "checkbox" ? e.target.checked : e.target.value;
+
+    // Add date validation for date fields
+    if (e.target.name === "date" || e.target.name === "dob") {
+      const dateValue = e.target.value;
+      if (dateValue && !/^\d{2}\/\d{2}\/\d{4}$/.test(dateValue)) {
+        // Don't update if format is incorrect (but allow empty or partial input)
+        if (dateValue.length === 10) {
+          return; // Don't update if full length but wrong format
+        }
+      }
+    }
+
     setData({ ...data, [e.target.name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    // Validate date formats
+    const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+    if (!dateRegex.test(data.date)) {
+      setError("Please enter the application date in dd/mm/yyyy format");
+      return;
+    }
+    if (!dateRegex.test(data.dob)) {
+      setError("Please enter the date of birth in dd/mm/yyyy format");
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
-      await axios.post("/api/registration", data, {
+
+      // Format dates for submission
+      const submissionData = {
+        ...data,
+        date: formatDateForSubmission(data.date),
+        dob: formatDateForSubmission(data.dob),
+      };
+
+      await axios.post("/api/registration", submissionData, {
         headers: { "x-auth-token": token },
       });
       navigate("/options");
@@ -196,8 +280,12 @@ const Registration = () => {
                       onChange={handleChange}
                       placeholder="e.g. 2023-2024"
                       required
-                      className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      readOnly
+                      className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50"
                     />
+                    <p className="mt-1 text-xs text-gray-500">
+                      Automatically set to current academic year
+                    </p>
                   </div>
 
                   <div className="relative">
@@ -208,14 +296,18 @@ const Registration = () => {
                       Application Date
                     </label>
                     <input
-                      type="date"
+                      type="text"
                       id="date"
                       name="date"
                       value={data.date}
                       onChange={handleChange}
+                      placeholder="dd/mm/yyyy"
                       required
                       className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     />
+                    <p className="mt-1 text-xs text-gray-500">
+                      Format: dd/mm/yyyy (e.g., 25/12/2024)
+                    </p>
                   </div>
                 </div>
               </div>
@@ -399,15 +491,19 @@ const Registration = () => {
                       </svg>
                     </div>
                     <input
-                      type="date"
+                      type="text"
                       id="dob"
                       name="dob"
                       value={data.dob}
                       onChange={handleChange}
+                      placeholder="dd/mm/yyyy"
                       required
                       className="pl-10 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     />
                   </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Format: dd/mm/yyyy (e.g., 15/06/2000)
+                  </p>
                 </div>
 
                 <div className="relative">

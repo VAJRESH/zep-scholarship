@@ -481,14 +481,18 @@ const UserHistory = () => {
   const handleViewTravelIdCard = async (app) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`/api/applications/travel-expenses/${app._id}/file/idCard`, {
-        headers: { "x-auth-token": token },
-        responseType: "arraybuffer",
-      });
+      const res = await axios.get(
+        `/api/applications/travel-expenses/${app._id}/file/idCard`,
+        {
+          headers: { "x-auth-token": token },
+          responseType: "arraybuffer",
+        }
+      );
       setViewingDocument({
         blob: res.data,
         contentType: res.headers["content-type"],
-        fileName: app.idCard && app.idCard.fileName ? app.idCard.fileName : "ID Card",
+        fileName:
+          app.idCard && app.idCard.fileName ? app.idCard.fileName : "ID Card",
         title: "ID Card",
       });
     } catch (err) {
@@ -673,11 +677,7 @@ const UserHistory = () => {
                         />
                       </svg>
                       Submitted:{" "}
-                      {new Date(app.createdAt).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
+                      {new Date(app.createdAt).toLocaleDateString("en-GB")}
                     </span>
                     <span className="hidden sm:inline">•</span>
                     <span className="flex items-center">

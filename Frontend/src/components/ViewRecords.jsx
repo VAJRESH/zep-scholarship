@@ -120,7 +120,9 @@ const ViewRecords = () => {
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     try {
-      return new Date(dateString).toLocaleDateString();
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "N/A";
+      return date.toLocaleDateString("en-GB"); // dd/mm/yyyy format
     } catch {
       return "N/A";
     }
