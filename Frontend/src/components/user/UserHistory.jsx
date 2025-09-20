@@ -365,6 +365,25 @@ const UserHistory = () => {
     }
   };
 
+  const handleReapply = (app) => {
+    // Route user to appropriate application form based on type
+    let route = "";
+    switch (app.applicationType) {
+      case "schoolFees":
+        route = "/apply/school-fees";
+        break;
+      case "travelExpenses":
+        route = "/apply/travel-expenses";
+        break;
+      case "studyBooks":
+        route = "/apply/study-books";
+        break;
+      default:
+        return;
+    }
+    navigate(route);
+  };
+
   const DocumentCard = ({ title, url, color }) => {
     const colors = {
       blue: {
@@ -702,12 +721,12 @@ const UserHistory = () => {
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {getStatusBadge(app.status)}
                   <span className="px-3 py-1.5 text-sm font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                     ID: #{app._id ? app._id.slice(-5) : index + 1}
                   </span>
-                  {app.status !== "approved" && (
+                  {app.status !== "approved" && app.status !== "rejected" && (
                     <button
                       onClick={() => handleCancelApplication(app._id)}
                       className="ml-2 px-3 py-1.5 text-sm font-medium rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800 transition"
@@ -729,6 +748,45 @@ const UserHistory = () => {
                       </svg>
                       Cancel
                     </button>
+                  )}
+                  {app.status === "rejected" && (
+                    <>
+                      <button
+                        onClick={() => handleReapply(app)}
+                        className="ml-2 px-3 py-1.5 text-sm font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 hover:bg-green-200 dark:hover:bg-green-800 transition"
+                        title="Reapply for Scholarship"
+                      >
+                        <svg
+                          className="w-4 h-4 mr-1 inline"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                          />
+                        </svg>
+                        Reapply
+                      </button>
+                      {app.rejectionReason && (
+                        <div className="w-full mt-2 p-3 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-lg text-sm">
+                          <div className="font-semibold mb-1">
+                            Rejection Reason:
+                          </div>
+                          <div>{app.rejectionReason}</div>
+                          <div className="mt-1 text-xs text-red-700 dark:text-red-300">
+                            Rejected on:{" "}
+                            {new Date(app.rejectionDate).toLocaleDateString(
+                              "en-GB"
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

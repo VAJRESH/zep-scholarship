@@ -253,6 +253,33 @@ router.post("/approve/school-fees/:id", [auth, adminAuth], async (req, res) => {
   }
 });
 
+// Reject School Fees Application
+router.post("/reject/school-fees/:id", [auth, adminAuth], async (req, res) => {
+  try {
+    const { reason } = req.body;
+    if (!reason) {
+      return res.status(400).json({ msg: "Rejection reason is required" });
+    }
+
+    const app = await SchoolFeesApplication.findById(req.params.id);
+    if (!app) return res.status(404).json({ msg: "Application not found" });
+    
+    app.status = "rejected";
+    app.rejectionReason = reason;
+    app.rejectionDate = new Date();
+    
+    await app.save();
+    res.json({ 
+      success: true, 
+      msg: "School fees application rejected.",
+      application: app
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
+
 // Approve Travel Expenses Application
 router.post(
   "/approve/travel-expenses/:id",
@@ -271,6 +298,37 @@ router.post(
   }
 );
 
+// Reject Travel Expenses Application
+router.post(
+  "/reject/travel-expenses/:id",
+  [auth, adminAuth],
+  async (req, res) => {
+    try {
+      const { reason } = req.body;
+      if (!reason) {
+        return res.status(400).json({ msg: "Rejection reason is required" });
+      }
+
+      const app = await TravelExpensesApplication.findById(req.params.id);
+      if (!app) return res.status(404).json({ msg: "Application not found" });
+      
+      app.status = "rejected";
+      app.rejectionReason = reason;
+      app.rejectionDate = new Date();
+      
+      await app.save();
+      res.json({ 
+        success: true, 
+        msg: "Travel expenses application rejected.",
+        application: app
+      });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send("Server error");
+    }
+  }
+);
+
 // Approve Study Books Application
 router.post("/approve/study-books/:id", [auth, adminAuth], async (req, res) => {
   try {
@@ -279,6 +337,33 @@ router.post("/approve/study-books/:id", [auth, adminAuth], async (req, res) => {
     app.status = "approved";
     await app.save();
     res.json({ success: true, msg: "Study books application approved." });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
+
+// Reject Study Books Application
+router.post("/reject/study-books/:id", [auth, adminAuth], async (req, res) => {
+  try {
+    const { reason } = req.body;
+    if (!reason) {
+      return res.status(400).json({ msg: "Rejection reason is required" });
+    }
+
+    const app = await StudyBooksApplication.findById(req.params.id);
+    if (!app) return res.status(404).json({ msg: "Application not found" });
+    
+    app.status = "rejected";
+    app.rejectionReason = reason;
+    app.rejectionDate = new Date();
+    
+    await app.save();
+    res.json({ 
+      success: true, 
+      msg: "Study books application rejected.",
+      application: app
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server error");

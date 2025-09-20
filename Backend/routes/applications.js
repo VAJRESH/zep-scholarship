@@ -41,14 +41,14 @@ const schoolFeesUpload = upload.fields([
 
 router.post("/school-fees", auth, schoolFeesUpload, async (req, res) => {
   try {
-    // Prevent duplicate pending/rejected applications
+    // Only prevent if there's a pending application
     const existing = await SchoolFeesApplication.findOne({
       user: req.user.id,
-      status: { $ne: "approved" },
+      status: "pending"
     });
     if (existing) {
       return res.status(400).json({
-        msg: "You already have a pending or rejected school fees application. Please wait for it to be approved before applying again.",
+        msg: "You already have a pending school fees application. Please wait for the current application to be processed before applying again.",
       });
     }
 
@@ -91,14 +91,14 @@ router.post(
   travelExpensesUpload,
   async (req, res) => {
     try {
-      // Prevent duplicate pending/rejected applications
+      // Only prevent if there's a pending application
       const existing = await TravelExpensesApplication.findOne({
         user: req.user.id,
-        status: { $ne: "approved" },
+        status: "pending"
       });
       if (existing) {
         return res.status(400).json({
-          msg: "You already have a pending or rejected travel expenses application. Please wait for it to be approved before applying again.",
+          msg: "You already have a pending travel expenses application. Please wait for the current application to be processed before applying again.",
         });
       }
 
@@ -140,14 +140,14 @@ router.post(
 // Study Books Application
 router.post("/study-books", auth, async (req, res) => {
   try {
-    // Prevent duplicate pending/rejected applications
+    // Only prevent if there's a pending application
     const existing = await StudyBooksApplication.findOne({
       user: req.user.id,
-      status: { $ne: "approved" },
+      status: "pending"
     });
     if (existing) {
       return res.status(400).json({
-        msg: "You already have a pending or rejected study books application. Please wait for it to be approved before applying again.",
+        msg: "You already have a pending study books application. Please wait for the current application to be processed before applying again.",
       });
     }
 

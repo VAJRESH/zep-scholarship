@@ -48,6 +48,12 @@ const SchoolFeesApplicationSchema = new mongoose.Schema({
     default: "pending",
     enum: ["pending", "approved", "rejected"],
   },
+  rejectionReason: {
+    type: String,
+  },
+  rejectionDate: {
+    type: Date,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

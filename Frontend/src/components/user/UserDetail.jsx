@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, Button, Alert, DocumentViewer } from "../ui";
+import { Card, Button, Alert, DocumentViewer, RejectModal } from "../ui";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
@@ -16,6 +16,8 @@ const UserDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [viewingDocument, setViewingDocument] = useState(null);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectingApplication, setRejectingApplication] = useState(null);
   const [showBookNumbering, setShowBookNumbering] = useState(false);
   const [bookNumberingData, setBookNumberingData] = useState(null);
   const navigate = useNavigate();
@@ -171,6 +173,48 @@ const UserDetail = () => {
       alert("Application approved!");
     } catch (err) {
       alert("Failed to approve application.");
+    }
+  };
+
+  const handleReject = (app) => {
+    setRejectingApplication(app);
+    setShowRejectModal(true);
+  };
+
+  const handleConfirmReject = async (appId, reason) => {
+    try {
+      const token = localStorage.getItem("token");
+      const app = applications.find((a) => a._id === appId);
+      if (!app) return;
+
+      let url = "";
+      if (app.applicationType === "schoolFees") {
+        url = `/api/admin/reject/school-fees/${app._id}`;
+      } else if (app.applicationType === "travelExpenses") {
+        url = `/api/admin/reject/travel-expenses/${app._id}`;
+      } else if (app.applicationType === "studyBooks") {
+        url = `/api/admin/reject/study-books/${app._id}`;
+      }
+
+      await axios.post(url, { reason }, { headers: { "x-auth-token": token } });
+
+      // Update the applications list
+      setApplications((prev) =>
+        prev.map((a) =>
+          a._id === app._id
+            ? {
+                ...a,
+                status: "rejected",
+                rejectionReason: reason,
+                rejectionDate: new Date(),
+              }
+            : a
+        )
+      );
+      alert("Application rejected successfully.");
+    } catch (err) {
+      console.error("Error rejecting application:", err);
+      alert("Failed to reject application.");
     }
   };
 
@@ -1725,32 +1769,73 @@ const UserDetail = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {app.status !== "approved" && (
-                      <button
-                        onClick={() => handleApproveApplication(app)}
-                        className="ml-2 px-3 py-1.5 text-sm font-medium rounded-full bg-green-600 text-white hover:bg-green-700 transition"
-                        title="Approve Application"
-                      >
-                        <svg
-                          className="w-4 h-4 mr-1 inline"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
+                    {app.status === "pending" && (
+                      <>
+                        <button
+                          onClick={() => handleApproveApplication(app)}
+                          className="px-3 py-1.5 text-sm font-medium rounded-full bg-green-600 text-white hover:bg-green-700 transition"
+                          title="Approve Application"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                        Approve
-                      </button>
+                          <svg
+                            className="w-4 h-4 mr-1 inline"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => handleReject(app)}
+                          className="px-3 py-1.5 text-sm font-medium rounded-full bg-red-600 text-white hover:bg-red-700 transition"
+                          title="Reject Application"
+                        >
+                          <svg
+                            className="w-4 h-4 mr-1 inline"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                          Reject
+                        </button>
+                      </>
                     )}
-                    <span className="px-3 py-1.5 text-sm font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                      ID: #{app._id ? app._id.slice(-5) : index + 1}
+                    <span
+                      className={`px-3 py-1.5 text-sm font-medium rounded-full
+                      ${
+                        app.status === "approved"
+                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                          : app.status === "rejected"
+                          ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                          : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                      }`}
+                    >
+                      {app.status === "rejected"
+                        ? "Rejected"
+                        : app.status === "approved"
+                        ? "Approved"
+                        : `ID: #${app._id ? app._id.slice(-5) : index + 1}`}
                     </span>
+                    {app.status === "rejected" && app.rejectionReason && (
+                      <div className="ml-2 text-sm text-red-600 dark:text-red-400">
+                        Reason: {app.rejectionReason}
+                      </div>
+                    )}
                   </div>
                 </div>
                 {renderApplicationDetails(app)}
@@ -1814,6 +1899,20 @@ const UserDetail = () => {
           onClose={() => setViewingDocument(null)}
         />
       )}
+
+      {/* Rejection Modal */}
+      <RejectModal
+        isOpen={showRejectModal}
+        onClose={() => {
+          setShowRejectModal(false);
+          setRejectingApplication(null);
+        }}
+        onConfirm={(appId, reason) =>
+          handleConfirmReject(rejectingApplication._id, reason)
+        }
+        applicationId={rejectingApplication?._id}
+        applicationType={rejectingApplication?.applicationType}
+      />
 
       {/* Book Numbering Modal */}
       {showBookNumbering && bookNumberingData && (
