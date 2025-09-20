@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card } from "./ui";
+import { Card } from "../ui";
 
 const Options = () => {
   const navigate = useNavigate();

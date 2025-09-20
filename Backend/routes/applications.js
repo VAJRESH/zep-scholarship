@@ -283,6 +283,45 @@ router.delete('/:appId', auth, async (req, res) => {
   }
 });
 
+// Get all applications from all students (admin only)
+router.get("/all", auth, async (req, res) => {
+  try {
+    // Check if the user is an admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ msg: 'Access denied. Admin only route.' });
+    }
+
+    // Fetch all applications from all three collections
+    const schoolFeesApps = await SchoolFeesApplication.find().populate('user', 'username');
+    const travelExpensesApps = await TravelExpensesApplication.find().populate('user', 'username');
+    const studyBooksApps = await StudyBooksApplication.find().populate('user', 'username');
+
+    // Combine all applications and add application type
+    const allApplications = [
+      ...schoolFeesApps.map(app => ({
+        ...app.toObject(),
+        applicationType: 'School Fees'
+      })),
+      ...travelExpensesApps.map(app => ({
+        ...app.toObject(),
+        applicationType: 'Travel Expenses'
+      })),
+      ...studyBooksApps.map(app => ({
+        ...app.toObject(),
+        applicationType: 'Study Books'
+      }))
+    ];
+
+    // Sort by creation date (newest first)
+    allApplications.sort((a, b) => b.createdAt - a.createdAt);
+
+    res.json(allApplications);
+  } catch (err) {
+    console.error("Error fetching all applications:", err);
+    res.status(500).send("Server error");
+  }
+});
+
 // Health check endpoint
 router.get("/health", (req, res) => {
   res.json({ status: "ok", message: "Backend is running" });

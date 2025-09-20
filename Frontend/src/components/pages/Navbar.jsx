@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ThemeToggle } from "./ui";
+import { ThemeToggle } from "../ui";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -223,6 +223,12 @@ const Navbar = () => {
                       Dashboard
                     </Link>
                     <Link
+                      to="/admin/all-applications"
+                      className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200"
+                    >
+                      Applications
+                    </Link>
+                    <Link
                       to="/admin/view-records"
                       className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200"
                     >
@@ -328,6 +334,13 @@ const Navbar = () => {
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         Dashboard
+                      </Link>
+                      <Link
+                        to="/admin/all-applications"
+                        className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Applications
                       </Link>
                       <Link
                         to="/admin/view-records"

@@ -4,21 +4,22 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import Login from "./components/Login";
-import UserRegistration from "./components/UserRegistration";
-import Registration from "./components/Registration";
-import Options from "./components/Options";
-import AdminDashboard from "./components/AdminDashboard";
-import UserDetail from "./components/UserDetail";
-import ViewRecords from "./components/ViewRecords";
-import SchoolFeesForm from "./components/SchoolFeesForm";
-import TravelExpensesForm from "./components/TravelExpensesForm";
-import StudyBooksForm from "./components/StudyBooksForm";
-import UserHistory from "./components/UserHistory";
-import Home from "./components/Home";
-import Layout from "./components/Layout";
-import Navbar from "./components/Navbar";
-import SessionManager from "./components/SessionManager";
+import Login from "./components/auth/Login";
+import UserRegistration from "./components/user/UserRegistration";
+import Registration from "./components/user/Registration";
+import Options from "./components/pages/Options";
+import AdminDashboard from "./components/admin/AdminDashboard";
+import UserDetail from "./components/user/UserDetail";
+import ViewRecords from "./components/admin/ViewRecords";
+import AllApplications from "./components/admin/AllApplications";
+import SchoolFeesForm from "./components/user/SchoolFeesForm";
+import TravelExpensesForm from "./components/user/TravelExpensesForm";
+import StudyBooksForm from "./components/user/StudyBooksForm";
+import UserHistory from "./components/user/UserHistory";
+import Home from "./components/pages/Home";
+import Layout from "./components/pages/Layout";
+import Navbar from "./components/pages/Navbar";
+import SessionManager from "./components/user/SessionManager";
 
 // New Pages
 import AboutUs from "./components/pages/AboutUs";
@@ -28,7 +29,7 @@ import FAQ from "./components/pages/FAQ";
 import Partners from "./components/pages/Partners";
 import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 import TermsOfService from "./components/pages/TermsOfService";
-import ProfilePage from "./components/ProfilePage";
+import ProfilePage from "./components/user/ProfilePage";
 
 // Utility to check token validity
 const isTokenValid = () => {
@@ -154,6 +155,14 @@ function App() {
               element={
                 <AdminRoute>
                   <AdminDashboard />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/all-applications"
+              element={
+                <AdminRoute>
+                  <AllApplications />
                 </AdminRoute>
               }
             />

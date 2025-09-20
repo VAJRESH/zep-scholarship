@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { Card, Alert, DocumentViewer } from "./ui";
+import { Card, Alert, DocumentViewer } from "../ui";
 
 const UserHistory = () => {
   const [applications, setApplications] = useState([]);

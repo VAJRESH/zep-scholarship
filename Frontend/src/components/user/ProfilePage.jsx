@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { Button } from "./ui";
+import { Button } from "../ui";
 
 const ProfilePage = () => {
   const [form, setForm] = useState({});

@@ -3,6 +3,7 @@ const connectDB = require("./config/db");
 const path = require("path");
 const cors = require("cors");
 const app = express();
+require("dotenv").config();
 
 // Connect Database
 connectDB();
@@ -27,5 +28,5 @@ app.use("/api/registration", require("./routes/registration"));
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/applications", require("./routes/applications"));
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT ;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));

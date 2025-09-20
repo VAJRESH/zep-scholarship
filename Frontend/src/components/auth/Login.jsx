@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { Card, Input, Button, Alert } from "./ui";
+import { Card, Input, Button, Alert } from "../ui";
 
 const Login = () => {
   const [formData, setFormData] = useState({ username: "", password: "" });

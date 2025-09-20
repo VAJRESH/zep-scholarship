@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Card, Alert, Button, Input } from "./ui";
+import { Card, Alert, Button, Input } from "../ui";
 
 const ViewRecords = () => {
   const [searchId, setSearchId] = useState("");
