@@ -31,9 +31,8 @@ const TravelExpensesApplicationSchema = new mongoose.Schema({
     required: true,
   },
   idCard: {
-    data: Buffer,
-    contentType: String,
-    fileName: String,
+    type:String,
+    required: true,
   },
   status: {
     type: String,

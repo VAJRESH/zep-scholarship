@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, Button, Alert, DocumentViewer, RejectModal } from "../ui";
+import { handleDownloadFromUrl } from "../../util";
+
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
@@ -449,8 +451,8 @@ const UserDetail = () => {
       const res = await axios.get(
         `/api/admin/travel-expenses/${app._id}/file/idCard`,
         {
-          headers: { "x-auth-token": token },
-          responseType: "arraybuffer",
+        headers: { "x-auth-token": token },
+        responseType: "arraybuffer",
         }
       );
       // Try to extract filename from Content-Disposition header
@@ -872,7 +874,7 @@ const UserDetail = () => {
                     Preview
                   </button>
                   <button
-                    onClick={() => handleDownloadTravelIdCard(app)}
+                    onClick={() => handleDownloadFromUrl(app.idCard)}
                     className="inline-flex items-center text-primary hover:text-primary-dark"
                   >
                     <svg

@@ -7,6 +7,7 @@ const fs = require("fs");
 const SchoolFeesApplication = require("../models/SchoolFeesApplication");
 const TravelExpensesApplication = require("../models/TravelExpensesApplication");
 const StudyBooksApplication = require("../models/StudyBooksApplication");
+const { uploadFile } = require("../utils");
 
 // Set up multer for file storage
 const storage = multer.memoryStorage();
@@ -107,11 +108,7 @@ router.post(
       // Process uploaded ID card as blob
       if (req.files && req.files.idCard) {
         const file = req.files.idCard[0];
-        idCardBlob = {
-          data: file.buffer,
-          contentType: file.mimetype,
-          fileName: file.originalname,
-        };
+        idCardBlob=(await uploadFile(file))?.secureUrl;
       }
 
       const newApplication = new TravelExpensesApplication({

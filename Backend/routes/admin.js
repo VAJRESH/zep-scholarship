@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const auth = require("../middleware/auth");
 const adminAuth = require("../middleware/adminAuth");
 const User = require("../models/User");
@@ -25,11 +26,17 @@ router.get("/users", [auth, adminAuth], async (req, res) => {
 // Get a specific user's registration details
 router.get("/users/:id", [auth, adminAuth], async (req, res) => {
   try {
+    // First check if the ID is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ msg: "Invalid user ID format" });
+    }
+
     const registration = await StudentRegistration.findOne({
-      user: req.params.id,
+      user: new mongoose.Types.ObjectId(req.params.id),
     });
+    // Send null if no registration found instead of 404
     if (!registration) {
-      return res.status(404).json({ msg: "Registration not found" });
+      return res.status(200).json(null);
     }
 
     // Format dates in registration
