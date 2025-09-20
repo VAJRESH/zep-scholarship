@@ -25,18 +25,12 @@ const Registration = () => {
   const navigate = useNavigate();
 
   // Date formatting functions
-  const formatDateForDisplay = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "";
-    return date.toLocaleDateString("en-GB"); // dd/mm/yyyy format
-  };
-
-  const formatDateForInput = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "";
-    return date.toISOString().split("T")[0]; // yyyy-mm-dd format for input
+  const formatDate = (date) => {
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
   const formatDateForSubmission = (dateString) => {
@@ -46,6 +40,26 @@ const Registration = () => {
       return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
     }
     return dateString;
+  };
+
+  const isDateValid = (dateString) => {
+    const [day, month, year] = dateString.split("/").map(Number);
+    const date = new Date(year, month - 1, day);
+    return (
+      date instanceof Date &&
+      !isNaN(date) &&
+      date.getDate() === day &&
+      date.getMonth() === month - 1 &&
+      date.getFullYear() === year
+    );
+  };
+
+  const isFutureDate = (dateString) => {
+    const [day, month, year] = dateString.split("/").map(Number);
+    const inputDate = new Date(year, month - 1, day);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return inputDate > today;
   };
 
   // Function to get current academic year
@@ -131,6 +145,7 @@ const Registration = () => {
       setData((prevData) => ({
         ...prevData,
         academicYear: getCurrentAcademicYear(),
+        date: formatDate(new Date()), // Set today's date automatically
       }));
     }
   }, [loading]);
@@ -139,18 +154,30 @@ const Registration = () => {
     const value =
       e.target.type === "checkbox" ? e.target.checked : e.target.value;
 
-    // Add date validation for date fields
-    if (e.target.name === "date" || e.target.name === "dob") {
-      const dateValue = e.target.value;
-      if (dateValue && !/^\d{2}\/\d{2}\/\d{4}$/.test(dateValue)) {
-        // Don't update if format is incorrect (but allow empty or partial input)
-        if (dateValue.length === 10) {
-          return; // Don't update if full length but wrong format
+    if (e.target.name === "date") {
+      // For application date
+      if (value && value.length === 10) {
+        if (!isDateValid(value)) {
+          setError("Please enter a valid date in dd/mm/yyyy format");
+          return;
+        }
+        if (isFutureDate(value)) {
+          setError("Application date cannot be a future date");
+          return;
+        }
+      }
+    } else if (e.target.name === "dob") {
+      // For date of birth
+      if (value && value.length === 10) {
+        if (!isDateValid(value)) {
+          setError("Please enter a valid date in dd/mm/yyyy format");
+          return;
         }
       }
     }
 
     setData({ ...data, [e.target.name]: value });
+    setError(""); // Clear any error when input changes
   };
 
   const handleSubmit = async (e) => {
