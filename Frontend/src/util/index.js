@@ -28,3 +28,4 @@ export const handleDownloadFromUrl = async (fileUrl, fileName = "document") => {
     console.log(err)
   }
 };
+

@@ -56,14 +56,11 @@ router.post("/school-fees", auth, schoolFeesUpload, async (req, res) => {
     const fileFields = {};
     // Process uploaded files as blobs
     if (req.files) {
-      Object.keys(req.files).forEach((fieldName) => {
+      const fileKeys = Object.keys(req.files)
+      for (const fieldName of fileKeys) {
         const file = req.files[fieldName][0];
-        fileFields[fieldName] = {
-          data: file.buffer,
-          contentType: file.mimetype,
-          fileName: file.originalname,
-        };
-      });
+        fileFields[fieldName] =(await uploadFile(file))?.secureUrl
+      }
     }
 
     const newApplication = new SchoolFeesApplication({

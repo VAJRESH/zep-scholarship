@@ -4,7 +4,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Card, Button, Alert, DocumentViewer, RejectModal } from "../ui";
 import { handleDownloadFromUrl } from "../../util";
 
-
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 // Configure axios base URL
@@ -445,28 +444,25 @@ const UserDetail = () => {
   };
 
   // Helper to fetch and preview travel expenses ID card (admin)
-  const handleViewTravelIdCard = async (app) => {
+  const handleViewFile = async (fileUrl, fileName = "Document") => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(
-        `/api/admin/travel-expenses/${app._id}/file/idCard`,
-        {
+      const res = await axios.get(fileUrl, {
         headers: { "x-auth-token": token },
         responseType: "arraybuffer",
-        }
-      );
+      });
       // Try to extract filename from Content-Disposition header
-      let fileName = "ID Card";
+      let _fileName = fileName;
       const disposition = res.headers["content-disposition"];
       if (disposition) {
         const match = disposition.match(/filename="?([^";]+)"?/);
-        if (match) fileName = match[1];
+        if (match) _fileName = match[1];
       }
       setViewingDocument({
         blob: res.data,
         contentType: res.headers["content-type"],
-        fileName,
-        title: fileName,
+        fileName: _fileName,
+        title: _fileName,
       });
     } catch (err) {
       alert("Failed to load ID Card");
@@ -686,99 +682,31 @@ const UserDetail = () => {
                 scholarship application.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {app.birthCertificate && app.birthCertificate.data && (
-                  <DocumentCard
-                    title="Birth Certificate"
-                    url={`${BASE_URL}/api/admin/school-fees/${app._id}/file/birthCertificate`}
-                    color="blue"
-                    onClick={() =>
-                      handlePreviewDocument(
-                        `${BASE_URL}/api/admin/school-fees/${app._id}/file/birthCertificate`,
-                        "Birth Certificate"
-                      )
-                    }
-                  />
-                )}
-                {app.leavingCertificate && app.leavingCertificate.data && (
-                  <DocumentCard
-                    title="Leaving Certificate"
-                    url={`${BASE_URL}/api/admin/school-fees/${app._id}/file/leavingCertificate`}
-                    color="green"
-                    onClick={() =>
-                      handlePreviewDocument(
-                        `${BASE_URL}/api/admin/school-fees/${app._id}/file/leavingCertificate`,
-                        "Leaving Certificate"
-                      )
-                    }
-                  />
-                )}
-                {app.marksheet && app.marksheet.data && (
-                  <DocumentCard
-                    title="Marksheet"
-                    url={`${BASE_URL}/api/admin/school-fees/${app._id}/file/marksheet`}
-                    color="purple"
-                    onClick={() =>
-                      handlePreviewDocument(
-                        `${BASE_URL}/api/admin/school-fees/${app._id}/file/marksheet`,
-                        "Marksheet"
-                      )
-                    }
-                  />
-                )}
-                {app.admissionProof && app.admissionProof.data && (
-                  <DocumentCard
-                    title="Admission Proof"
-                    url={`${BASE_URL}/api/admin/school-fees/${app._id}/file/admissionProof`}
-                    color="orange"
-                    onClick={() =>
-                      handlePreviewDocument(
-                        `${BASE_URL}/api/admin/school-fees/${app._id}/file/admissionProof`,
-                        "Admission Proof"
-                      )
-                    }
-                  />
-                )}
-                {app.incomeProof && app.incomeProof.data && (
-                  <DocumentCard
-                    title="Income Proof"
-                    url={`${BASE_URL}/api/admin/school-fees/${app._id}/file/incomeProof`}
-                    color="pink"
-                    onClick={() =>
-                      handlePreviewDocument(
-                        `${BASE_URL}/api/admin/school-fees/${app._id}/file/incomeProof`,
-                        "Income Proof"
-                      )
-                    }
-                  />
-                )}
-                {app.bankAccount && app.bankAccount.data && (
-                  <DocumentCard
-                    title="Bank Account Details"
-                    url={`${BASE_URL}/api/admin/school-fees/${app._id}/file/bankAccount`}
-                    color="indigo"
-                    onClick={() =>
-                      handlePreviewDocument(
-                        `${BASE_URL}/api/admin/school-fees/${app._id}/file/bankAccount`,
-                        "Bank Account Details"
-                      )
-                    }
-                  />
-                )}
-                {app.rationCard && app.rationCard.data && (
-                  <DocumentCard
-                    title="Ration Card"
-                    url={`${BASE_URL}/api/admin/school-fees/${app._id}/file/rationCard`}
-                    color="teal"
-                    onClick={() =>
-                      handlePreviewDocument(
-                        `${BASE_URL}/api/admin/school-fees/${app._id}/file/rationCard`,
-                        "Ration Card"
-                      )
-                    }
-                  />
-                )}
+                {[
+                  "birthCertificate",
+                  "leavingCertificate",
+                  "marksheet",
+                  "admissionProof",
+                  "incomeProof",
+                  "bankAccount",
+                  "rationCard",
+                ].map((fileName) => {
+                  if (!app?.[fileName]?.length) return null;
+
+                  return (
+                    <DocumentCard
+                      title={fileName}
+                      url={app?.[fileName]}
+                      color="blue"
+                      onClick={() =>
+                        handlePreviewDocument(app?.[fileName], fileName)
+                      }
+                    />
+                  );
+                })} 
               </div>
             </div>
+
             <button
               onClick={() => handleDownloadSchoolFeesPDF(app._id)}
               className="ml-2 px-3 py-1.5 text-sm font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800 transition"
@@ -848,7 +776,7 @@ const UserDetail = () => {
                 </p>
                 <div className="flex space-x-2">
                   <button
-                    onClick={() => handleViewTravelIdCard(app)}
+                    onClick={() => handleViewFile(app?.idCard, "Id Card")}
                     className="inline-flex items-center text-primary hover:text-primary-dark"
                   >
                     <svg

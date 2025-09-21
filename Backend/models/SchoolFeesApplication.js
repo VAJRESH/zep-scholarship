@@ -1,11 +1,5 @@
 const mongoose = require("mongoose");
 
-const FileSchema = new mongoose.Schema({
-  data: Buffer,
-  contentType: String,
-  fileName: String,
-});
-
 const SchoolFeesApplicationSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -17,31 +11,31 @@ const SchoolFeesApplicationSchema = new mongoose.Schema({
     default: "schoolFees",
   },
   birthCertificate: {
-    type: FileSchema,
+    type: String,
     required: true,
   },
   leavingCertificate: {
-    type: FileSchema,
+    type: String,
     required: true,
   },
   marksheet: {
-    type: FileSchema,
+    type: String,
     required: true,
   },
   admissionProof: {
-    type: FileSchema,
+    type: String,
     required: true,
   },
   incomeProof: {
-    type: FileSchema,
+    type: String,
     required: true,
   },
   bankAccount: {
-    type: FileSchema,
+    type: String,
     required: true,
   },
   rationCard: {
-    type: FileSchema,
+    type: String,
   },
   status: {
     type: String,
