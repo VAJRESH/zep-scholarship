@@ -7,7 +7,7 @@ module.exports = defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: process.env.VITE_BACKEND_URL,
+        target: process.env.VITE_API_BASE_URL,
         changeOrigin: true,
         secure: false,
       },
