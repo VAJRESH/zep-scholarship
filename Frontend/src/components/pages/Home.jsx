@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import logo from "../../../public/assets/logo.jpg"
 
 const Home = () => {
   const navigate = useNavigate();
@@ -481,6 +482,7 @@ const Home = () => {
             {/* Copyright */}
             <div className="border-t border-gray-200 dark:border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
               <div className="flex items-center order-2 md:order-1">
+                <img src={logo} alt="" width="50px" className="mb-3 mx-2"/>
                 <p className="text-base text-gray-500 dark:text-gray-400">
                   &copy; {new Date().getFullYear()} Vivekanand Seva Mandal. All
                   rights reserved.
